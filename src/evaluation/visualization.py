@@ -261,7 +261,11 @@ def plot_training_curves(
         title: Plot title
         save_path: Path to save figure
     """
-    n_plots = len([k for k in history.keys() if 'loss' in k.lower()])
+    valid_keys = [k for k, v in history.items() if 'loss' in k.lower() and len(v) > 0]
+    n_plots = len(valid_keys)
+    if n_plots == 0:
+        return
+
     fig, axes = plt.subplots(1, n_plots, figsize=(5 * n_plots, 4))
     if n_plots == 1:
         axes = [axes]
@@ -269,9 +273,8 @@ def plot_training_curves(
     epochs = history.get('epochs', list(range(1, len(history['train_loss']) + 1)))
     
     plot_idx = 0
-    for key, values in history.items():
-        if 'loss' not in key.lower():
-            continue
+    for key in valid_keys:
+        values = history[key]
         ax = axes[plot_idx]
         ax.plot(epochs, values, linewidth=2)
         ax.set_xlabel('Epoch')
