@@ -124,7 +124,7 @@ Thumbs.db
 # Project specific
 outputs/models/*.pth
 outputs/logs/*.json
-outputs/figures/*.png
+# outputs/figures/*.png
 !outputs/models/.gitkeep
 !outputs/logs/.gitkeep
 !outputs/figures/.gitkeep
