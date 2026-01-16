@@ -275,8 +275,9 @@ class AutoencoderTrainer:
             
             # Learning rate scheduling
             if self.scheduler is not None:
-                if val_loss is not None:
-                    self.scheduler.step(val_loss)
+                if isinstance(self.scheduler, optim.lr_scheduler.ReduceLROnPlateau):
+                    metric = val_loss if val_loss is not None else train_loss
+                    self.scheduler.step(metric)
                 else:
                     self.scheduler.step()
             

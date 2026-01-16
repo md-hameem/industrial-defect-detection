@@ -93,13 +93,12 @@ class VAEDecoder(nn.Module):
                 nn.ReLU(inplace=True),
             ])
         
-        # Final layer
+        # Final layer without activation (linear output)
         layers.extend([
             nn.ConvTranspose2d(
                 channels[-1], out_channels, 3,
                 stride=2, padding=1, output_padding=1
             ),
-            nn.Sigmoid(),
         ])
         
         self.deconv = nn.Sequential(*layers)

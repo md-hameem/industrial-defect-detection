@@ -57,7 +57,7 @@ class DenoisingAutoencoder(nn.Module):
         """
         noise = torch.randn_like(x) * self.noise_factor
         noisy = x + noise
-        return torch.clamp(noisy, 0.0, 1.0)
+        return noisy  # Do not clamp for normalized data
     
     def forward(
         self, x: torch.Tensor, add_noise: bool = None

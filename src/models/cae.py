@@ -77,11 +77,10 @@ class CAEDecoder(nn.Module):
         for i in range(len(channels) - 1):
             layers.append(DeconvBlock(channels[i], channels[i + 1]))
         
-        # Final layer without BatchNorm, using Sigmoid for [0, 1] output
+        # Final layer without BatchNorm or activation (linear output)
         layers.append(nn.ConvTranspose2d(
             channels[-1], out_channels, 3, stride=2, padding=1, output_padding=1
         ))
-        layers.append(nn.Sigmoid())
         
         self.decoder = nn.Sequential(*layers)
     
