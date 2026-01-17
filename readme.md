@@ -16,6 +16,31 @@
 | **CNN Classifier** | NEU Surface Defect | Accuracy | **99%** |
 | **CAE (Grid)** | Cross-dataset (Kolektor) | ROC-AUC | 0.690 |
 
+## 📸 Sample Results
+
+### Datasets Used
+![Datasets](outputs/figures/thesis_fig1_datasets.png)
+
+### Model Comparison (CAE vs Denoising AE)
+![Model Comparison](outputs/figures/thesis_fig2_model_comparison.png)
+
+### Cross-Dataset Generalization (MVTec → Kolektor)
+![Generalization Heatmap](outputs/figures/thesis_fig3_generalization.png)
+
+### CAE Reconstruction Examples
+![Reconstructions](outputs/figures/thesis_fig4_reconstructions.png)
+
+### CNN Classifier Performance (NEU Dataset)
+| Training Curves | Confusion Matrix |
+|-----------------|------------------|
+| ![Training](outputs/figures/cnn_training_curves.png) | ![Confusion](outputs/figures/cnn_confusion_matrix.png) |
+
+### Kolektor Cross-Dataset Results
+![Kolektor Results](outputs/figures/cross_dataset_bar.png)
+
+### Model Performance Heatmap
+![Heatmap](outputs/figures/model_heatmap.png)
+
 ## 🔍 Overview
 
 This project implements **unsupervised anomaly detection** using autoencoder-based deep learning methods for industrial defect detection and localization.
