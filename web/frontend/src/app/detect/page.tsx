@@ -4,10 +4,11 @@ import { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "@/context/ThemeContext";
+import { ErrorAlert, ProgressBar, ResultSkeleton, Spinner } from "@/components/LoadingUI";
 import { 
   Search, Settings, Upload, X, Zap, BarChart3, Download, Clock, RefreshCw, 
   Image as ImageIcon, Layers, CheckCircle, AlertTriangle, AlertCircle,
-  ChevronDown, Info, Tag, Cpu
+  ChevronDown, Info, Tag, Cpu, WifiOff
 } from "lucide-react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -75,10 +76,29 @@ export default function DetectPage() {
     const formData = new FormData();
     formData.append("file", file);
     try {
-      const response = await fetch(`${API_URL}/predict?model_type=${modelType}&category=${selectedCategory}`, { method: "POST", body: formData });
-      if (!response.ok) throw new Error((await response.json()).detail || "Failed");
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+      const response = await fetch(`${API_URL}/predict?model_type=${modelType}&category=${selectedCategory}`, { 
+        method: "POST", 
+        body: formData,
+        signal: controller.signal 
+      });
+      clearTimeout(timeoutId);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || `Server error: ${response.status}`);
+      }
       return await response.json();
-    } catch { return null; }
+    } catch (err) {
+      if (err instanceof Error) {
+        if (err.name === 'AbortError') {
+          setError('Request timed out. The server may be overloaded.');
+        } else if (err.message.includes('Failed to fetch')) {
+          setError('Cannot connect to server. Please ensure the backend is running on port 8000.');
+        }
+      }
+      return null;
+    }
   };
 
   const handleAnalyze = async () => {
@@ -381,15 +401,42 @@ export default function DetectPage() {
             </AnimatePresence>
 
             {/* Analyze Button */}
+            {/* Progress bar during loading */}
+            {loading && (
+              <div className="my-4">
+                <ProgressBar current={batchProgress.current} total={batchProgress.total} />
+              </div>
+            )}
+
             <motion.button onClick={handleAnalyze} disabled={uploadedImages.length === 0 || loading} whileHover={uploadedImages.length > 0 && !loading ? { scale: 1.02 } : {}} whileTap={uploadedImages.length > 0 && !loading ? { scale: 0.98 } : {}} className={`w-full mt-5 py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-3 transition-all ${uploadedImages.length > 0 && !loading ? (useCNN ? "bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/25" : "bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-600 text-white shadow-lg shadow-blue-500/25") : `${darkMode ? "bg-slate-700 text-slate-400" : "bg-slate-200 text-slate-400"} cursor-not-allowed`}`}>
               {loading ? (
-                <><motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }}><Zap className="w-5 h-5" /></motion.div> Processing {batchProgress.current}/{batchProgress.total}...</>
+                <><Spinner size="sm" /> <span className="ml-2">Processing...</span></>
               ) : (
                 <><Search className="w-5 h-5" /> {useCNN ? "Classify" : "Analyze"} {uploadedImages.length} Image{uploadedImages.length > 1 ? "s" : ""} {!useCNN && compareMode && <span className="text-sm opacity-70">× 3</span>}</>
               )}
             </motion.button>
 
-            {error && <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-4 p-4 bg-rose-500/20 border border-rose-500/30 rounded-xl text-rose-400 flex items-start gap-2"><AlertCircle className="w-5 h-5 shrink-0 mt-0.5" /><div>{error}</div></motion.div>}
+            <AnimatePresence>
+              {error && (
+                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="mt-4">
+                  <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20">
+                    <div className="flex items-start gap-3">
+                      <WifiOff className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
+                      <div className="flex-1">
+                        <p className="text-rose-400 font-medium">Connection Error</p>
+                        <p className={`text-sm mt-1 ${darkMode ? "text-rose-300/70" : "text-rose-600/70"}`}>{error}</p>
+                        <button onClick={handleAnalyze} className="mt-3 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 text-sm transition">
+                          <RefreshCw className="w-3 h-3" /> Retry
+                        </button>
+                      </div>
+                      <button onClick={() => setError(null)} className="text-rose-400 hover:text-rose-300 p-1">
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </motion.div>
 
