@@ -254,27 +254,41 @@ export default function AboutPage() {
         </div>
       </motion.section>
 
-      {/* Author Section (Compact) */}
+      {/* Author & Supervisor Section */}
       <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7 }} className="mb-16">
         <div className="p-6 rounded-2xl bg-slate-800/30 border border-white/10">
-          <div className="flex items-center gap-6 flex-wrap">
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shrink-0">
-              <User className="w-10 h-10" />
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Author */}
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shrink-0">
+                <User className="w-8 h-8" />
+              </div>
+              <div>
+                <div className="text-xs text-slate-500 uppercase tracking-wide">Author</div>
+                <h3 className="text-xl font-bold">Mohammad Hamim</h3>
+                <p className="text-sm text-slate-400">Bachelor's Thesis - 2026</p>
+                <div className="flex gap-2 mt-2">
+                  <a href="https://github.com/md-hameem" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 px-3 py-1 text-sm rounded-lg bg-slate-700 hover:bg-slate-600 transition">
+                    <Github className="w-3 h-3" /> GitHub
+                  </a>
+                  <a href="https://linkedin.com/in/md-hameem" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 px-3 py-1 text-sm rounded-lg bg-slate-700 hover:bg-slate-600 transition">
+                    <Linkedin className="w-3 h-3" /> LinkedIn
+                  </a>
+                </div>
+              </div>
             </div>
-            <div className="flex-1 min-w-[200px]">
-              <h3 className="text-xl font-bold">Mohammad Hamim</h3>
-              <p className="text-blue-400">Bachelors Thesis - Zhengzhou University - 2026</p>
-              <p className="text-sm text-slate-400 mt-2">
-                Computer Science student specializing in AI and deep learning for industrial applications.
-              </p>
-            </div>
-            <div className="flex gap-3">
-              <a href="https://github.com/md-hameem" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 transition">
-                <Github className="w-4 h-4" /> GitHub
-              </a>
-              <a href="https://linkedin.com/in/md-hameem" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 transition">
-                <Linkedin className="w-4 h-4" /> LinkedIn
-              </a>
+            
+            {/* Supervisor */}
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shrink-0">
+                <User className="w-8 h-8" />
+              </div>
+              <div>
+                <div className="text-xs text-slate-500 uppercase tracking-wide">Supervisor</div>
+                <h3 className="text-xl font-bold">Lu Yang (卢洋)</h3>
+                <p className="text-sm text-slate-400">Zhengzhou University</p>
+                <p className="text-sm text-slate-500">School of Computer Science</p>
+              </div>
             </div>
           </div>
         </div>

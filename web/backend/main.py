@@ -171,7 +171,7 @@ async def list_models():
     return inference.get_available_models()
 
 
-@app.post("/predict", response_model=PredictionResponse)
+@app.post("/predict")
 async def predict(
     file: UploadFile = File(...),
     model_type: str = "CAE",
@@ -182,8 +182,8 @@ async def predict(
     Upload an image and get defect detection results.
     
     - **file**: Image file (PNG, JPG)
-    - **model_type**: CAE, VAE, or DAE
-    - **category**: MVTec category the model was trained on
+    - **model_type**: CAE, VAE, DAE, or CNN
+    - **category**: MVTec category (not needed for CNN)
     """
     import time
     start_time = time.time()
@@ -209,16 +209,34 @@ async def predict(
     
     processing_time = time.time() - start_time
     
-    return PredictionResponse(
-        success=True,
-        model=model_type,
-        category=category,
-        anomaly_score=result["anomaly_score"],
-        original_image=result["original_base64"],
-        reconstruction=result["reconstruction_base64"],
-        heatmap=result["heatmap_base64"],
-        processing_time=processing_time,
-    )
+    # Return different response based on model type
+    if result.get("is_classifier", False):
+        # CNN classifier response
+        return {
+            "success": True,
+            "model": "CNN",
+            "model_type": "classifier",
+            "category": "NEU",
+            "predicted_class": result["predicted_class"],
+            "confidence": result["confidence"],
+            "class_probabilities": result["class_probabilities"],
+            "original_image": result["original_base64"],
+            "chart_image": result["chart_base64"],
+            "processing_time": processing_time,
+        }
+    else:
+        # Autoencoder response
+        return {
+            "success": True,
+            "model": model_type,
+            "model_type": "autoencoder",
+            "category": category,
+            "anomaly_score": result["anomaly_score"],
+            "original_image": result["original_base64"],
+            "reconstruction": result["reconstruction_base64"],
+            "heatmap": result["heatmap_base64"],
+            "processing_time": processing_time,
+        }
 
 
 @app.get("/categories")
@@ -227,6 +245,13 @@ async def get_categories():
     return inference.get_available_categories()
 
 
+@app.get("/cnn/available")
+async def cnn_available():
+    """Check if CNN classifier model is available"""
+    return {"available": inference.is_cnn_available()}
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
+

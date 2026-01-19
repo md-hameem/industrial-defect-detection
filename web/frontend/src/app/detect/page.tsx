@@ -3,15 +3,21 @@
 import { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Settings, Upload, X, Zap, BarChart3, Download, Clock, RefreshCw } from "lucide-react";
+import { 
+  Search, Settings, Upload, X, Zap, BarChart3, Download, Clock, RefreshCw, 
+  Image as ImageIcon, Layers, CheckCircle, AlertTriangle, AlertCircle,
+  ChevronDown, Info, Tag, Cpu
+} from "lucide-react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 const CATEGORIES = ["bottle", "cable", "capsule", "carpet", "grid", "hazelnut", "leather", "metal_nut", "pill", "screw", "tile", "toothbrush", "transistor", "wood", "zipper"];
-const MODEL_TYPES = ["CAE", "VAE", "DAE"];
+const AUTOENCODER_TYPES = ["CAE", "VAE", "DAE"];
+const NEU_CLASSES = ["Crazing", "Inclusion", "Patches", "Pitted", "Rolled", "Scratches"];
 
-interface PredictionResult {
+interface AutoencoderResult {
   success: boolean;
   model: string;
+  model_type: "autoencoder";
   category: string;
   anomaly_score: number;
   original_image: string;
@@ -20,14 +26,32 @@ interface PredictionResult {
   processing_time: number;
 }
 
+interface ClassifierResult {
+  success: boolean;
+  model: string;
+  model_type: "classifier";
+  category: string;
+  predicted_class: string;
+  confidence: number;
+  class_probabilities: Record<string, number>;
+  original_image: string;
+  chart_image: string;
+  processing_time: number;
+}
+
+type PredictionResult = AutoencoderResult | ClassifierResult;
+
 export default function DetectPage() {
   const [selectedCategory, setSelectedCategory] = useState("bottle");
+  const [selectedModel, setSelectedModel] = useState("CAE");
+  const [useCNN, setUseCNN] = useState(false);
   const [uploadedImages, setUploadedImages] = useState<{file: File, preview: string}[]>([]);
   const [results, setResults] = useState<PredictionResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [compareMode, setCompareMode] = useState(false);
   const [batchProgress, setBatchProgress] = useState({ current: 0, total: 0 });
+  const [expandedResult, setExpandedResult] = useState<number | null>(null);
 
   const saveToHistory = (result: PredictionResult, filename: string) => {
     const saved = localStorage.getItem("defect_history");
@@ -58,10 +82,20 @@ export default function DetectPage() {
   const handleAnalyze = async () => {
     if (uploadedImages.length === 0) return;
     setLoading(true); setError(null); setResults([]);
-    const modelsToRun = compareMode ? MODEL_TYPES : ["CAE"];
+    
+    let modelsToRun: string[];
+    if (useCNN) {
+      modelsToRun = ["CNN"];
+    } else if (compareMode) {
+      modelsToRun = AUTOENCODER_TYPES;
+    } else {
+      modelsToRun = [selectedModel];
+    }
+    
     const total = uploadedImages.length * modelsToRun.length;
     setBatchProgress({ current: 0, total });
     const allResults: PredictionResult[] = [];
+    
     for (const { file } of uploadedImages) {
       for (const modelType of modelsToRun) {
         const result = await analyzeImage(file, modelType);
@@ -69,8 +103,9 @@ export default function DetectPage() {
         setBatchProgress({ current: allResults.length, total });
       }
     }
+    
     setResults(allResults);
-    if (allResults.length === 0) setError("No models could process the images");
+    if (allResults.length === 0) setError("No models could process the images. Make sure the backend is running.");
     setLoading(false);
   };
 
@@ -81,108 +116,305 @@ export default function DetectPage() {
     link.click();
   };
 
+  const downloadAllResults = () => {
+    results.forEach((result, i) => {
+      setTimeout(() => {
+        if (result.model_type === "autoencoder") {
+          downloadImage(result.heatmap, `heatmap_${result.model}_${result.category}_${i+1}.png`);
+        } else {
+          downloadImage(result.chart_image, `chart_CNN_${i+1}.png`);
+        }
+      }, i * 100);
+    });
+  };
+
   const getScoreColor = (s: number) => s < 0.3 ? "text-emerald-400" : s < 0.6 ? "text-amber-400" : "text-rose-400";
   const getScoreLabel = (s: number) => s < 0.3 ? "Normal" : s < 0.6 ? "Suspicious" : "Anomaly";
-  const getScoreBg = (s: number) => s < 0.3 ? "from-emerald-500/20" : s < 0.6 ? "from-amber-500/20" : "from-rose-500/20";
+  const getScoreBg = (s: number) => s < 0.3 ? "from-emerald-500/20 to-emerald-500/5" : s < 0.6 ? "from-amber-500/20 to-amber-500/5" : "from-rose-500/20 to-rose-500/5";
+  const getScoreIcon = (s: number) => s < 0.3 ? CheckCircle : s < 0.6 ? AlertTriangle : AlertCircle;
+
+  const autoencoderResults = results.filter((r): r is AutoencoderResult => r.model_type === "autoencoder");
+  const classifierResults = results.filter((r): r is ClassifierResult => r.model_type === "classifier");
+
+  const stats = results.length > 0 ? {
+    total: results.length,
+    normal: autoencoderResults.filter(r => r.anomaly_score < 0.3).length,
+    suspicious: autoencoderResults.filter(r => r.anomaly_score >= 0.3 && r.anomaly_score < 0.6).length,
+    anomaly: autoencoderResults.filter(r => r.anomaly_score >= 0.6).length,
+    avgTime: results.reduce((sum, r) => sum + r.processing_time, 0) / results.length,
+  } : null;
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-8">
-      <motion.h1 initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="text-3xl font-bold mb-8 flex items-center gap-3">
-        <Search className="w-8 h-8 text-blue-400" />
-        <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">Defect Detection</span>
-      </motion.h1>
+      {/* Header */}
+      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
+        <h1 className="text-4xl font-bold mb-2 flex items-center gap-3">
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
+            <Search className="w-6 h-6" />
+          </div>
+          <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">Defect Detection</span>
+        </h1>
+        <p className="text-slate-400 ml-15">Upload industrial images for AI-powered anomaly analysis</p>
+      </motion.div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Left Panel */}
-        <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
-          {/* Settings */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+        {/* Left Panel - Settings & Upload (2 cols) */}
+        <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="lg:col-span-2 space-y-6">
+          
+          {/* Mode Selection */}
+          <div className="p-6 rounded-2xl bg-slate-800/50 border border-white/10 backdrop-blur">
+            <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
+              <Cpu className="w-5 h-5 text-blue-400" /> Detection Mode
+            </h2>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => setUseCNN(false)}
+                className={`p-4 rounded-xl text-left transition-all ${!useCNN ? "bg-gradient-to-r from-blue-500/20 to-purple-500/20 border-2 border-blue-500/50" : "bg-slate-700/30 border-2 border-transparent hover:border-white/10"}`}
+              >
+                <div className="font-bold mb-1">Autoencoders</div>
+                <div className="text-xs text-slate-400">CAE, VAE, DAE</div>
+                <div className="text-xs text-slate-500 mt-2">Anomaly detection with heatmaps</div>
+              </button>
+              <button
+                onClick={() => { setUseCNN(true); setCompareMode(false); }}
+                className={`p-4 rounded-xl text-left transition-all ${useCNN ? "bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border-2 border-emerald-500/50" : "bg-slate-700/30 border-2 border-transparent hover:border-white/10"}`}
+              >
+                <div className="font-bold mb-1 flex items-center gap-2">CNN <Tag className="w-3 h-3" /></div>
+                <div className="text-xs text-slate-400">Classifier</div>
+                <div className="text-xs text-slate-500 mt-2">Defect type classification</div>
+              </button>
+            </div>
+          </div>
+
+          {/* Settings Card */}
           <div className="p-6 rounded-2xl bg-slate-800/50 border border-white/10 backdrop-blur">
             <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
               <Settings className="w-5 h-5 text-blue-400" /> Settings
             </h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm text-slate-300 mb-2">Category</label>
-                <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)} className="w-full p-3 rounded-xl bg-slate-700/50 border border-slate-600 text-white">
-                  {CATEGORIES.map((cat) => <option key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1).replace("_", " ")}</option>)}
-                </select>
-              </div>
-              <label className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer ${compareMode ? "bg-blue-500/20 border border-blue-500/30" : "bg-slate-700/30"}`}>
-                <input type="checkbox" checked={compareMode} onChange={(e) => setCompareMode(e.target.checked)} className="w-5 h-5 accent-blue-500" />
-                <div>
-                  <span className="font-semibold flex items-center gap-2"><RefreshCw className="w-4 h-4" /> Compare All Models</span>
-                  <span className="block text-sm text-slate-400">Run CAE, VAE, DAE side-by-side</span>
-                </div>
-              </label>
-            </div>
-          </div>
-
-          {/* Upload */}
-          <div className="p-6 rounded-2xl bg-slate-800/50 border border-white/10 backdrop-blur">
-            <div className="flex justify-between mb-4">
-              <h2 className="text-lg font-bold flex items-center gap-2">
-                <Upload className="w-5 h-5 text-blue-400" /> Upload
-              </h2>
-              {uploadedImages.length > 0 && <button onClick={() => { setUploadedImages([]); setResults([]); }} className="text-sm text-rose-400 flex items-center gap-1"><X className="w-4 h-4" /> Clear</button>}
-            </div>
-            <div {...getRootProps()} className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer ${isDragActive ? "border-blue-500 bg-blue-500/10" : "border-slate-600"}`}>
-              <input {...getInputProps()} />
-              <Upload className={`w-12 h-12 mx-auto mb-3 ${isDragActive ? "text-blue-400" : "text-slate-500"}`} />
-              <p className="text-slate-300">{isDragActive ? "Drop it!" : "Drag & drop or click"}</p>
-            </div>
-            {uploadedImages.length > 0 && (
-              <div className="mt-4 grid grid-cols-4 gap-3">
-                {uploadedImages.map((img, i) => (
-                  <div key={i} className="relative group rounded-xl overflow-hidden">
-                    <img src={img.preview} alt="" className="w-full h-20 object-cover" />
-                    <button onClick={() => setUploadedImages(prev => prev.filter((_, idx) => idx !== i))} className="absolute top-1 right-1 w-6 h-6 bg-rose-500 text-white rounded-full opacity-0 group-hover:opacity-100 flex items-center justify-center"><X className="w-4 h-4" /></button>
+            
+            {!useCNN ? (
+              <>
+                {/* Autoencoder Model Selection */}
+                <div className="mb-4">
+                  <label className="block text-sm text-slate-300 mb-2">Model</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {AUTOENCODER_TYPES.map((model) => (
+                      <button
+                        key={model}
+                        onClick={() => { setSelectedModel(model); setCompareMode(false); }}
+                        disabled={compareMode}
+                        className={`p-3 rounded-xl text-center transition-all ${!compareMode && selectedModel === model ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white" : compareMode ? "bg-slate-700/30 text-slate-500 cursor-not-allowed" : "bg-slate-700/50 text-slate-300 hover:bg-slate-700"}`}
+                      >
+                        <div className="font-bold">{model}</div>
+                        <div className="text-xs opacity-70">{model === "CAE" ? "Standard" : model === "VAE" ? "Probabilistic" : "Denoising"}</div>
+                      </button>
+                    ))}
                   </div>
-                ))}
+                </div>
+
+                {/* Category Selection */}
+                <div className="mb-4">
+                  <label className="block text-sm text-slate-300 mb-2">Category</label>
+                  <div className="relative">
+                    <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)} className="w-full p-3 rounded-xl bg-slate-700/50 border border-slate-600 text-white appearance-none">
+                      {CATEGORIES.map((cat) => <option key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1).replace("_", " ")}</option>)}
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
+                  </div>
+                </div>
+
+                {/* Compare Mode */}
+                <label className={`flex items-center gap-3 p-4 rounded-xl cursor-pointer ${compareMode ? "bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-500/30" : "bg-slate-700/30"}`}>
+                  <input type="checkbox" checked={compareMode} onChange={(e) => setCompareMode(e.target.checked)} className="w-5 h-5 accent-blue-500" />
+                  <div className="flex-1">
+                    <span className="font-semibold flex items-center gap-2"><RefreshCw className={`w-4 h-4 ${compareMode ? "text-blue-400" : ""}`} /> Compare All</span>
+                    <span className="block text-sm text-slate-400">Run CAE, VAE, DAE together</span>
+                  </div>
+                  {compareMode && <span className="text-xs bg-blue-500/30 text-blue-300 px-2 py-1 rounded">3x</span>}
+                </label>
+              </>
+            ) : (
+              <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                <div className="flex items-center gap-2 mb-2">
+                  <Tag className="w-5 h-5 text-emerald-400" />
+                  <span className="font-bold text-emerald-400">CNN Classifier</span>
+                </div>
+                <p className="text-sm text-slate-400 mb-3">Classifies steel surface defects into 6 categories:</p>
+                <div className="flex flex-wrap gap-2">
+                  {NEU_CLASSES.map((cls) => (
+                    <span key={cls} className="text-xs px-2 py-1 rounded bg-slate-700/50 text-slate-300">{cls}</span>
+                  ))}
+                </div>
               </div>
             )}
-            <motion.button onClick={handleAnalyze} disabled={uploadedImages.length === 0 || loading} whileHover={uploadedImages.length > 0 && !loading ? { scale: 1.02 } : {}} className={`w-full mt-5 py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 ${uploadedImages.length > 0 && !loading ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white" : "bg-slate-700 text-slate-400 cursor-not-allowed"}`}>
-              {loading ? <><Zap className="w-5 h-5 animate-pulse" /> Processing {batchProgress.current}/{batchProgress.total}...</> : <><Search className="w-5 h-5" /> Analyze {uploadedImages.length} Image{uploadedImages.length > 1 ? "s" : ""}{compareMode ? " x 3" : ""}</>}
+          </div>
+
+          {/* Upload Card */}
+          <div className="p-6 rounded-2xl bg-slate-800/50 border border-white/10 backdrop-blur">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-bold flex items-center gap-2">
+                <Upload className="w-5 h-5 text-blue-400" /> Upload Images
+              </h2>
+              {uploadedImages.length > 0 && (
+                <button onClick={() => { setUploadedImages([]); setResults([]); }} className="text-sm text-rose-400 flex items-center gap-1 hover:text-rose-300">
+                  <X className="w-4 h-4" /> Clear ({uploadedImages.length})
+                </button>
+              )}
+            </div>
+            
+            <div {...getRootProps()} className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-colors ${isDragActive ? "border-blue-500 bg-blue-500/10" : "border-slate-600 hover:border-slate-500"}`}>
+              <input {...getInputProps()} />
+              <div className={`w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center ${isDragActive ? "bg-blue-500/20" : "bg-slate-700/50"}`}>
+                <Upload className={`w-8 h-8 ${isDragActive ? "text-blue-400" : "text-slate-500"}`} />
+              </div>
+              <p className="text-slate-300 font-medium">{isDragActive ? "Drop images here" : "Drag & drop images"}</p>
+              <p className="text-sm text-slate-500 mt-1">or click to browse</p>
+            </div>
+
+            {/* Preview Grid */}
+            <AnimatePresence>
+              {uploadedImages.length > 0 && (
+                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="mt-4">
+                  <div className="flex items-center gap-2 mb-2 text-sm text-slate-400">
+                    <ImageIcon className="w-4 h-4" />
+                    {uploadedImages.length} image{uploadedImages.length > 1 ? "s" : ""} selected
+                  </div>
+                  <div className="grid grid-cols-4 gap-2">
+                    {uploadedImages.map((img, i) => (
+                      <motion.div key={i} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="relative group rounded-xl overflow-hidden aspect-square">
+                        <img src={img.preview} alt="" className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <button onClick={() => setUploadedImages(prev => prev.filter((_, idx) => idx !== i))} className="w-8 h-8 bg-rose-500 rounded-full flex items-center justify-center hover:bg-rose-600">
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Analyze Button */}
+            <motion.button onClick={handleAnalyze} disabled={uploadedImages.length === 0 || loading} whileHover={uploadedImages.length > 0 && !loading ? { scale: 1.02 } : {}} whileTap={uploadedImages.length > 0 && !loading ? { scale: 0.98 } : {}} className={`w-full mt-5 py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-3 transition-all ${uploadedImages.length > 0 && !loading ? (useCNN ? "bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/25" : "bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-600 text-white shadow-lg shadow-blue-500/25") : "bg-slate-700 text-slate-400 cursor-not-allowed"}`}>
+              {loading ? (
+                <><motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }}><Zap className="w-5 h-5" /></motion.div> Processing {batchProgress.current}/{batchProgress.total}...</>
+              ) : (
+                <><Search className="w-5 h-5" /> {useCNN ? "Classify" : "Analyze"} {uploadedImages.length} Image{uploadedImages.length > 1 ? "s" : ""} {!useCNN && compareMode && <span className="text-sm opacity-70">× 3</span>}</>
+              )}
             </motion.button>
-            {error && <div className="mt-4 p-4 bg-rose-500/20 border border-rose-500/30 rounded-xl text-rose-400">{error}</div>}
+
+            {error && <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-4 p-4 bg-rose-500/20 border border-rose-500/30 rounded-xl text-rose-400 flex items-start gap-2"><AlertCircle className="w-5 h-5 shrink-0 mt-0.5" /><div>{error}</div></motion.div>}
           </div>
         </motion.div>
 
-        {/* Results */}
-        <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="p-6 rounded-2xl bg-slate-800/50 border border-white/10 backdrop-blur">
-          <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-            <BarChart3 className="w-5 h-5 text-blue-400" /> Results
-          </h2>
-          <AnimatePresence mode="wait">
-            {results.length > 0 ? (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4 max-h-[600px] overflow-y-auto">
-                {results.map((result, i) => (
-                  <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={`p-4 rounded-xl bg-gradient-to-br ${getScoreBg(result.anomaly_score)} to-transparent border border-white/5`}>
-                    <div className="flex justify-between mb-3">
-                      <span className="px-3 py-1 rounded-lg bg-slate-700/50 font-bold">{result.model}</span>
-                      <div className="text-right">
-                        <span className={`text-2xl font-black ${getScoreColor(result.anomaly_score)}`}>{result.anomaly_score.toFixed(3)}</span>
-                        <span className={`block text-sm ${getScoreColor(result.anomaly_score)}`}>{getScoreLabel(result.anomaly_score)}</span>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-3 gap-3">
-                      {[{ label: "Original", img: result.original_image }, { label: "Reconstruction", img: result.reconstruction }, { label: "Heatmap", img: result.heatmap }].map((item, j) => (
-                        <div key={j} className="cursor-pointer hover:scale-105 transition-transform" onClick={() => downloadImage(item.img, `${item.label}_${result.model}.png`)}>
-                          <p className="text-xs text-slate-400 mb-1">{item.label}</p>
-                          <img src={`data:image/png;base64,${item.img}`} alt={item.label} className="w-full rounded-lg" />
+        {/* Right Panel - Results (3 cols) */}
+        <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="lg:col-span-3">
+          <div className="p-6 rounded-2xl bg-slate-800/50 border border-white/10 backdrop-blur min-h-[600px]">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-bold flex items-center gap-2">
+                <BarChart3 className="w-5 h-5 text-blue-400" /> Results
+              </h2>
+              {results.length > 0 && <button onClick={downloadAllResults} className="flex items-center gap-2 px-4 py-2 bg-emerald-500/20 text-emerald-400 rounded-lg hover:bg-emerald-500/30"><Download className="w-4 h-4" /> Download All</button>}
+            </div>
+            
+            {/* Stats Summary */}
+            <AnimatePresence>
+              {stats && autoencoderResults.length > 0 && (
+                <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="grid grid-cols-5 gap-3 mb-6">
+                  <div className="p-3 rounded-xl bg-slate-700/30 text-center"><div className="text-2xl font-bold text-white">{stats.total}</div><div className="text-xs text-slate-400">Total</div></div>
+                  <div className="p-3 rounded-xl bg-emerald-500/10 text-center"><div className="text-2xl font-bold text-emerald-400">{stats.normal}</div><div className="text-xs text-slate-400">Normal</div></div>
+                  <div className="p-3 rounded-xl bg-amber-500/10 text-center"><div className="text-2xl font-bold text-amber-400">{stats.suspicious}</div><div className="text-xs text-slate-400">Suspicious</div></div>
+                  <div className="p-3 rounded-xl bg-rose-500/10 text-center"><div className="text-2xl font-bold text-rose-400">{stats.anomaly}</div><div className="text-xs text-slate-400">Anomaly</div></div>
+                  <div className="p-3 rounded-xl bg-slate-700/30 text-center"><div className="text-2xl font-bold text-blue-400">{stats.avgTime.toFixed(1)}s</div><div className="text-xs text-slate-400">Avg Time</div></div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Results List */}
+            <AnimatePresence mode="wait">
+              {results.length > 0 ? (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4 max-h-[500px] overflow-y-auto pr-2">
+                  {/* Classifier Results */}
+                  {classifierResults.map((result, i) => (
+                    <motion.div key={`cnn-${i}`} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="p-4 rounded-xl bg-gradient-to-br from-emerald-500/20 to-emerald-500/5 border border-emerald-500/20">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <span className="px-3 py-1 rounded-lg bg-emerald-500/30 font-bold text-sm text-emerald-400">CNN</span>
+                          <span className="text-slate-400 text-sm">NEU Classifier</span>
                         </div>
-                      ))}
-                    </div>
-                    <p className="text-xs text-slate-500 mt-2 flex items-center gap-1"><Clock className="w-3 h-3" /> {result.processing_time.toFixed(2)}s | Click to download</p>
-                  </motion.div>
-                ))}
-              </motion.div>
-            ) : (
-              <div className="text-center py-20 text-slate-500">
-                <Search className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                <p>Upload an image to start</p>
-              </div>
-            )}
-          </AnimatePresence>
+                        <div className="text-right">
+                          <div className="text-2xl font-black text-emerald-400 flex items-center gap-2"><Tag className="w-5 h-5" />{result.predicted_class}</div>
+                          <div className="text-sm text-emerald-300">{(result.confidence * 100).toFixed(1)}% confidence</div>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <p className="text-xs text-slate-400 mb-1">Original</p>
+                          <img src={`data:image/png;base64,${result.original_image}`} alt="Original" className="w-full rounded-lg" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-slate-400 mb-1">Class Probabilities</p>
+                          <img src={`data:image/png;base64,${result.chart_image}`} alt="Chart" className="w-full rounded-lg" />
+                        </div>
+                      </div>
+                      <p className="text-xs text-slate-500 mt-2 flex items-center gap-1"><Clock className="w-3 h-3" /> {result.processing_time.toFixed(2)}s</p>
+                    </motion.div>
+                  ))}
+                  
+                  {/* Autoencoder Results */}
+                  {autoencoderResults.map((result, i) => {
+                    const ScoreIcon = getScoreIcon(result.anomaly_score);
+                    return (
+                      <motion.div key={`ae-${i}`} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className={`p-4 rounded-xl bg-gradient-to-br ${getScoreBg(result.anomaly_score)} border border-white/5 cursor-pointer`} onClick={() => setExpandedResult(expandedResult === i ? null : i)}>
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-3">
+                            <span className="px-3 py-1 rounded-lg bg-slate-700/50 font-bold text-sm">{result.model}</span>
+                            <span className="text-slate-400 text-sm">{result.category}</span>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <div className="text-right">
+                              <div className={`text-2xl font-black flex items-center gap-2 ${getScoreColor(result.anomaly_score)}`}><ScoreIcon className="w-5 h-5" />{result.anomaly_score.toFixed(3)}</div>
+                              <div className={`text-sm ${getScoreColor(result.anomaly_score)}`}>{getScoreLabel(result.anomaly_score)}</div>
+                            </div>
+                            <ChevronDown className={`w-5 h-5 text-slate-400 transition-transform ${expandedResult === i ? "rotate-180" : ""}`} />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-3 gap-3">
+                          {[{ label: "Original", img: result.original_image }, { label: "Reconstruction", img: result.reconstruction }, { label: "Heatmap", img: result.heatmap }].map((item, j) => (
+                            <motion.div key={j} whileHover={{ scale: 1.05 }} className="cursor-pointer group relative" onClick={(e) => { e.stopPropagation(); downloadImage(item.img, `${item.label.toLowerCase()}_${result.model}.png`); }}>
+                              <p className="text-xs text-slate-400 mb-1">{item.label}</p>
+                              <div className="relative rounded-lg overflow-hidden">
+                                <img src={`data:image/png;base64,${item.img}`} alt={item.label} className="w-full rounded-lg" />
+                                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"><Download className="w-6 h-6" /></div>
+                              </div>
+                            </motion.div>
+                          ))}
+                        </div>
+                        <AnimatePresence>
+                          {expandedResult === i && (
+                            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="mt-4 pt-4 border-t border-white/10">
+                              <div className="grid grid-cols-3 gap-4 text-sm">
+                                <div><span className="text-slate-500">Processing Time</span><div className="font-bold flex items-center gap-1"><Clock className="w-4 h-4 text-blue-400" /> {result.processing_time.toFixed(2)}s</div></div>
+                                <div><span className="text-slate-500">Model Type</span><div className="font-bold flex items-center gap-1"><Layers className="w-4 h-4 text-purple-400" /> {result.model}</div></div>
+                                <div><span className="text-slate-500">Category</span><div className="font-bold">{result.category}</div></div>
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </motion.div>
+                    );
+                  })}
+                </motion.div>
+              ) : (
+                <div className="text-center py-20">
+                  <div className="w-20 h-20 rounded-2xl bg-slate-700/30 mx-auto mb-4 flex items-center justify-center"><Search className="w-10 h-10 text-slate-600" /></div>
+                  <p className="text-slate-500 mb-2">No results yet</p>
+                  <p className="text-sm text-slate-600">Upload images and click {useCNN ? "Classify" : "Analyze"} to start</p>
+                </div>
+              )}
+            </AnimatePresence>
+          </div>
         </motion.div>
       </div>
     </div>
