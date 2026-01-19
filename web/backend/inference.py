@@ -129,7 +129,13 @@ class ModelInference:
                 reconstruction, _, _ = model(input_tensor)
                 anomaly_score = model.get_anomaly_score(input_tensor).item()
                 error_map = model.get_anomaly_map(input_tensor)[0, 0].cpu().numpy()
+            elif model_type.upper() == "DAE":
+                # DAE forward() returns tuple, use reconstruct() for direct reconstruction
+                reconstruction = model.reconstruct(input_tensor)
+                anomaly_score = model.get_reconstruction_error(input_tensor, reduction='mean').item()
+                error_map = model.get_anomaly_map(input_tensor)[0, 0].cpu().numpy()
             else:
+                # CAE
                 reconstruction = model(input_tensor)
                 anomaly_score = model.get_reconstruction_error(input_tensor, reduction='mean').item()
                 error_map = model.get_anomaly_map(input_tensor)[0, 0].cpu().numpy()
