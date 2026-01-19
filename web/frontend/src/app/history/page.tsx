@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
-import { useDropzone } from "react-dropzone";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Download, Trash2, History, Filter, Calendar, Zap } from "lucide-react";
+import { useTheme } from "@/context/ThemeContext";
+import { Download, Trash2, History, Filter, Calendar } from "lucide-react";
 
 interface HistoryItem {
   id: string;
@@ -16,6 +16,7 @@ interface HistoryItem {
 }
 
 export default function HistoryPage() {
+  const { darkMode } = useTheme();
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [filter, setFilter] = useState<string>("all");
 
@@ -47,6 +48,15 @@ export default function HistoryPage() {
     return item.model === filter;
   });
 
+  // Theme-aware classes
+  const cardBg = darkMode ? "bg-slate-800/50 border-white/5" : "bg-white/80 border-slate-200 shadow-sm";
+  const cardHover = darkMode ? "hover:bg-slate-800/70" : "hover:bg-slate-50";
+  const textPrimary = darkMode ? "text-white" : "text-slate-900";
+  const textSecondary = darkMode ? "text-slate-400" : "text-slate-600";
+  const textMuted = darkMode ? "text-slate-500" : "text-slate-400";
+  const filterBg = darkMode ? "bg-slate-800/50 text-slate-400 hover:bg-slate-700" : "bg-slate-100 text-slate-600 hover:bg-slate-200";
+  const filterActive = "bg-blue-500 text-white";
+
   return (
     <div className="max-w-7xl mx-auto px-6 py-8">
       <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between mb-8">
@@ -62,13 +72,13 @@ export default function HistoryPage() {
       </motion.div>
 
       {/* Filters */}
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-2 mb-6">
-        <Filter className="w-4 h-4 text-slate-500" />
-        {["all", "CAE", "VAE", "DAE", "normal", "suspicious", "anomaly"].map((f) => (
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-2 mb-6 flex-wrap">
+        <Filter className={`w-4 h-4 ${textMuted}`} />
+        {["all", "CAE", "VAE", "DAE", "CNN", "normal", "suspicious", "anomaly"].map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f)}
-            className={`px-4 py-2 rounded-lg transition ${filter === f ? "bg-blue-500 text-white" : "bg-slate-800/50 text-slate-400 hover:bg-slate-700"}`}
+            className={`px-4 py-2 rounded-lg transition ${filter === f ? filterActive : filterBg}`}
           >
             {f.charAt(0).toUpperCase() + f.slice(1)}
           </button>
@@ -84,9 +94,9 @@ export default function HistoryPage() {
             { label: "Suspicious", value: history.filter(h => h.anomaly_score >= 0.3 && h.anomaly_score < 0.6).length, color: "amber" },
             { label: "Anomalies", value: history.filter(h => h.anomaly_score >= 0.6).length, color: "rose" },
           ].map((stat, i) => (
-            <div key={i} className="p-4 rounded-xl bg-slate-800/50 border border-white/5 text-center">
+            <div key={i} className={`p-4 rounded-xl border text-center ${cardBg}`}>
               <div className={`text-2xl font-bold text-${stat.color}-400`}>{stat.value}</div>
-              <div className="text-slate-400 text-sm">{stat.label}</div>
+              <div className={`text-sm ${textSecondary}`}>{stat.label}</div>
             </div>
           ))}
         </motion.div>
@@ -102,14 +112,14 @@ export default function HistoryPage() {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: i * 0.05 }}
-                className="p-4 rounded-xl bg-slate-800/50 border border-white/5 flex items-center gap-4 hover:bg-slate-800/70 transition"
+                className={`p-4 rounded-xl border flex items-center gap-4 transition ${cardBg} ${cardHover}`}
               >
                 <img src={`data:image/png;base64,${item.heatmap}`} alt="" className="w-20 h-20 rounded-lg object-cover" />
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="font-bold">{item.model}</span>
-                    <span className="text-slate-500">|</span>
-                    <span className="text-slate-400">{item.category}</span>
+                    <span className={`font-bold ${textPrimary}`}>{item.model}</span>
+                    <span className={textMuted}>|</span>
+                    <span className={textSecondary}>{item.category}</span>
                     <span className={`px-2 py-0.5 rounded text-xs ${getScoreColor(item.anomaly_score)}`}>
                       {getScoreLabel(item.anomaly_score)}
                     </span>
@@ -117,7 +127,7 @@ export default function HistoryPage() {
                   <div className={`text-lg font-bold ${getScoreColor(item.anomaly_score)}`}>
                     Score: {item.anomaly_score.toFixed(4)}
                   </div>
-                  <div className="text-xs text-slate-500 flex items-center gap-1">
+                  <div className={`text-xs flex items-center gap-1 ${textMuted}`}>
                     <Calendar className="w-3 h-3" /> {new Date(item.timestamp).toLocaleString()}
                   </div>
                 </div>
@@ -133,7 +143,7 @@ export default function HistoryPage() {
             ))}
           </motion.div>
         ) : (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-20 text-slate-500">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={`text-center py-20 ${textMuted}`}>
             <History className="w-16 h-16 mx-auto mb-4 opacity-50" />
             <p>{history.length === 0 ? "No history yet. Start detecting!" : "No results match the filter."}</p>
           </motion.div>
