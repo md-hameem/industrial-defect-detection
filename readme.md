@@ -2,10 +2,44 @@
 
 [![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-red.svg)](https://pytorch.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-15-black.svg)](https://nextjs.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-teal.svg)](https://fastapi.tiangolo.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Changelog](https://img.shields.io/badge/Changelog-v1.1.0-green.svg)](CHANGELOG.md)
+[![Changelog](https://img.shields.io/badge/Changelog-v2.0.0-green.svg)](CHANGELOG.md)
 
 **Bachelor's Graduation Thesis** - Research on Industrial Defect Detection Methods Based on Deep Learning
+
+## 🌐 Web Application
+
+A full-stack web application for interactive defect detection:
+
+| Homepage | Detection Results |
+|----------|-------------------|
+| ![Homepage](web/frontend/public/preview-home.png) | ![Detection](web/frontend/public/preview-detect.png) |
+
+### Features
+- 🔍 **Real-time Detection** - Upload images and get instant AI analysis
+- 🧠 **4 AI Models** - CAE, VAE, DAE (anomaly detection) + CNN (classification)
+- 🌡️ **Visual Heatmaps** - See exactly where defects are located
+- 📊 **Class Probabilities** - CNN classifier with bar chart visualization
+- 🌓 **Dark/Light Mode** - Full theme support
+- 📜 **History Tracking** - Keep track of all predictions
+
+### Quick Start
+```bash
+# Backend (port 8000)
+cd web/backend
+pip install -r requirements.txt
+uvicorn main:app --reload --port 8000
+
+# Frontend (port 3000)
+cd web/frontend
+npm install
+npm run dev
+```
+Open http://localhost:3000
+
+---
 
 ## 📊 Results Summary
 
@@ -36,12 +70,6 @@
 |-----------------|------------------|
 | ![Training](outputs/figures/cnn_training_curves.png) | ![Confusion](outputs/figures/cnn_confusion_matrix.png) |
 
-### Kolektor Cross-Dataset Results
-![Kolektor Results](outputs/figures/cross_dataset_bar.png)
-
-### Model Performance Heatmap
-![Heatmap](outputs/figures/model_heatmap.png)
-
 ## 🔍 Overview
 
 This project implements **unsupervised anomaly detection** using autoencoder-based deep learning methods for industrial defect detection and localization.
@@ -51,6 +79,7 @@ This project implements **unsupervised anomaly detection** using autoencoder-bas
 - 🔍 **Unsupervised Learning** - Train on normal samples only
 - 🏭 **3 Industrial Datasets** - MVTec AD, KolektorSDD2, NEU Surface Defect
 - 🧠 **4 Models** - CAE, VAE, Denoising AE, CNN Classifier
+- 🌐 **Full-Stack Web App** - Next.js + FastAPI
 - 📊 **84 Visualizations** - Heatmaps, ROC curves, reconstructions
 - 💻 **CPU Optimized** - Designed for training without GPU
 - 🔬 **Cross-Dataset Testing** - Generalization evaluation
@@ -64,6 +93,13 @@ This project implements **unsupervised anomaly detection** using autoencoder-bas
 │   ├── models/             # CAE, VAE, Denoising AE, CNN
 │   ├── training/           # Training utilities, losses
 │   └── evaluation/         # Metrics & visualization
+├── web/
+│   ├── backend/            # FastAPI inference server
+│   │   ├── main.py         # API endpoints
+│   │   └── inference.py    # Model loading & prediction
+│   └── frontend/           # Next.js React application
+│       ├── src/app/        # Pages (detect, research, about, history)
+│       └── src/components/ # Navbar, Footer, ClientLayout
 ├── notebooks/
 │   ├── 00_data_exploration.ipynb
 │   ├── 01_train_cae.ipynb
@@ -106,6 +142,15 @@ jupyter notebook
 ```
 Start with `00_data_exploration.ipynb` → then training notebooks.
 
+### 5. Run Web Application
+```bash
+# Terminal 1: Backend
+cd web/backend && uvicorn main:app --reload --port 8000
+
+# Terminal 2: Frontend
+cd web/frontend && npm run dev
+```
+
 ## 🧠 Models
 
 | Model | Type | Key Feature | Best AUC |
@@ -122,13 +167,6 @@ Start with `00_data_exploration.ipynb` → then training notebooks.
 3. **Structured patterns** (grid, metal_nut) are easier to detect than textures
 4. **Supervised CNN** achieves near-perfect accuracy on NEU dataset
 
-## 📊 Generated Figures
-
-- `thesis_fig1_datasets.png` - Dataset overview
-- `thesis_fig2_model_comparison.png` - CAE vs DAE comparison
-- `thesis_fig3_generalization.png` - Cross-dataset heatmap
-- `thesis_fig4_reconstructions.png` - Reconstruction examples
-
 ## 💻 Hardware Requirements
 
 Designed for **CPU-only training**:
@@ -136,6 +174,11 @@ Designed for **CPU-only training**:
 - 16GB RAM recommended
 - ~10GB disk for datasets
 - Training time: ~7-12 min per category
+
+## 👥 Authors
+
+- **Mohammad Hamim** - Author - [GitHub](https://github.com/md-hameem) | [LinkedIn](https://linkedin.com/in/md-hameem)
+- **Lu Yang (卢洋)** - Supervisor - Zhengzhou University, School of Computer Science - ieylu@zzu.edu.cn
 
 ## 📚 Citation
 

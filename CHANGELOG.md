@@ -4,6 +4,44 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [2.0.0] - 2026-01-19
+
+### Added
+- **Full-stack Web Application** for interactive defect detection
+  - Next.js 15 frontend with React and Tailwind CSS
+  - FastAPI backend for model inference
+  - Dark/Light mode theme support
+- **CNN Classifier Integration** in web app (99% accuracy on NEU dataset)
+  - Class probability bar chart visualization
+  - 6-class classification: Crazing, Inclusion, Patches, Pitted, Rolled, Scratches
+- **Detection Page Features**:
+  - Autoencoder mode (CAE, VAE, DAE) with heatmap visualization
+  - CNN mode for supervised classification
+  - Score explanation panel with thresholds and model performance
+  - Batch upload and processing
+  - Compare All Models mode
+  - Download individual/all results
+- **Research Page** with interactive tables:
+  - MVTec AD performance by category
+  - Cross-dataset evaluation results
+  - Model architecture comparison cards
+- **History Page** with filtering and export
+- **About Page** with project info, author/supervisor details
+- **Homepage** with animated hero, feature cards, and workflow section
+- Framer Motion animations throughout the UI
+- Lucide React icons (replaced all emojis)
+- Global ThemeContext for consistent theming
+
+### Changed
+- Updated main README with web application section
+- Enhanced backend API to support both autoencoders and CNN classifier
+- `/predict` endpoint now returns model-specific responses
+- Added `/cnn/available` endpoint to check CNN model status
+
+### Fixed
+- CNN model path corrected to `cnn_classifier_final.pth`
+- Model type detection in API response
+
 ## [1.1.0] - 2026-01-17
 
 ### Added
