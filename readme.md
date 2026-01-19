@@ -13,9 +13,9 @@
 
 A full-stack web application for interactive defect detection:
 
-| Homepage | Detection Results |
-|----------|-------------------|
-| ![Homepage](web/frontend/public/preview-home.png) | ![Detection](web/frontend/public/preview-detect.png) |
+| Homepage | Detection Page |
+|----------|----------------|
+| ![Homepage](web/frontend/public/homepage.png) | ![Detection](web/frontend/public/detectpage.png) |
 
 ### Features
 - 🔍 **Real-time Detection** - Upload images and get instant AI analysis
