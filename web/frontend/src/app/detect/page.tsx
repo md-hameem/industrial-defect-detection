@@ -245,9 +245,85 @@ export default function DetectPage() {
                     <span key={cls} className="text-xs px-2 py-1 rounded bg-slate-700/50 text-slate-300">{cls}</span>
                   ))}
                 </div>
+                <div className="mt-3 pt-3 border-t border-emerald-500/20 text-xs text-slate-500">
+                  <strong className="text-slate-400">Accuracy:</strong> 99% on NEU Surface Defect dataset
+                </div>
               </div>
             )}
           </div>
+
+          {/* Score Explanation (for autoencoders) */}
+          {!useCNN && (
+            <div className="p-6 rounded-2xl bg-slate-800/50 border border-white/10 backdrop-blur">
+              <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
+                <Info className="w-5 h-5 text-blue-400" /> Understanding Scores
+              </h2>
+              
+              <div className="space-y-4 text-sm">
+                <div>
+                  <h3 className="font-semibold text-slate-300 mb-2">How is the score calculated?</h3>
+                  <p className="text-slate-400">
+                    The <strong className="text-white">anomaly score</strong> is the <strong className="text-blue-400">mean reconstruction error</strong> — 
+                    how different the AI&apos;s reconstruction is from your original image. Higher error = more anomalous.
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold text-slate-300 mb-2">Score Thresholds</h3>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-3 p-2 rounded-lg bg-emerald-500/10">
+                      <CheckCircle className="w-4 h-4 text-emerald-400" />
+                      <div>
+                        <span className="font-bold text-emerald-400">0.0 - 0.3</span>
+                        <span className="text-slate-400 ml-2">Normal — No defect detected</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 p-2 rounded-lg bg-amber-500/10">
+                      <AlertTriangle className="w-4 h-4 text-amber-400" />
+                      <div>
+                        <span className="font-bold text-amber-400">0.3 - 0.6</span>
+                        <span className="text-slate-400 ml-2">Suspicious — Possible anomaly</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 p-2 rounded-lg bg-rose-500/10">
+                      <AlertCircle className="w-4 h-4 text-rose-400" />
+                      <div>
+                        <span className="font-bold text-rose-400">0.6+</span>
+                        <span className="text-slate-400 ml-2">Anomaly — Likely defect</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold text-slate-300 mb-2">Model Performance (Mean AUC)</h3>
+                  <div className="grid grid-cols-3 gap-2 text-center">
+                    <div className="p-2 rounded-lg bg-slate-700/30">
+                      <div className="font-bold text-blue-400">CAE</div>
+                      <div className="text-xs text-slate-500">0.62 AUC</div>
+                    </div>
+                    <div className="p-2 rounded-lg bg-slate-700/30">
+                      <div className="font-bold text-purple-400">VAE</div>
+                      <div className="text-xs text-slate-500">0.48 AUC</div>
+                    </div>
+                    <div className="p-2 rounded-lg bg-slate-700/30">
+                      <div className="font-bold text-orange-400">DAE</div>
+                      <div className="text-xs text-slate-500">0.62 AUC</div>
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-2">
+                    AUC = Area Under ROC Curve (1.0 = perfect, 0.5 = random)
+                  </p>
+                </div>
+
+                <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                  <p className="text-slate-400">
+                    <strong className="text-blue-400">Heatmap Tip:</strong> Red/yellow areas show where the model detected differences from normal. These are potential defect locations.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Upload Card */}
           <div className="p-6 rounded-2xl bg-slate-800/50 border border-white/10 backdrop-blur">
