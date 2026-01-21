@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [2.2.0] - 2026-01-21
+
+### Added
+- **Thesis Document** (`docs/thesis_paper.md`)
+  - Complete draft with 6 chapters: Introduction, Literature Review, Methodology, Experiments, Discussion, Conclusion.
+  - 14 integrated figures (architecture diagrams, result charts, heatmaps).
+  - Detailed hyperparameter tables and system architecture.
+- **New Visualizations**
+  - NEU Surface Defect category examples.
+  - Training loss convergence curves.
+  - Pixel-level performance metric charts.
+
+### Documentation
+- Updated **Methodology** chapter with specific CNN architecture (11M params) and Web App tech stack.
+- Refined **Discussion** chapter with insights on VAE bottleneck (128-dim vector) vs CAE (65k-dim spatial) performance trade-offs.
+
 ## [2.1.0] - 2026-01-21
 
 ### Added

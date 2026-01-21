@@ -133,6 +133,9 @@ L = MSE(decoder(encoder(x_noisy)), x)
 - Crazing, Inclusion, Patches, Pitted, Rolled, Scratches
 - 300×300 grayscale images
 
+![NEU Surface Defect Categories](../outputs/figures/neu_categories.png)
+*Figure 2.3: Six defect categories of the NEU Surface Defect dataset.*
+
 ### 2.4 Evaluation Metrics
 
 - **Image-level AUC**: Overall detection performance
@@ -235,6 +238,9 @@ A lightweight CNN is implemented for supervised classification on the NEU datase
 | Loss Function | MSE (+ KL for VAE) |
 | Device | CPU/CUDA |
 
+![Training Convergence Example](../outputs/figures/cae_bottle_loss_curve.png)
+*Figure 3.4: Example training loss curve (CAE on Bottle category) showing stable convergence.*
+
 ### 3.5 Anomaly Scoring
 
 1. **Reconstruction**: x̂ = Decoder(Encoder(x))
@@ -294,6 +300,12 @@ The demonstration system is a full-stack web application designed for real-time 
 | VAE | 0.412 | 0.706 | 0.720 | 0.990 | 0.822 |
 | DAE | **0.596** | **0.813** | **0.762** | **0.995** | **0.854** |
 
+![Model Comparison Bar Chart](../outputs/figures/evaluation_bar_comparison.png)
+*Figure 4.1: Comparison of Image AUC and F1 Score across all categories.*
+
+![Multi-Metric Radar Chart](../outputs/figures/evaluation_radar.png)
+*Figure 4.2: Radar chart comparing models across 5 key metrics.*
+
 #### 4.2.2 Pixel-Level Performance
 
 | Model | Pixel AUC | Mean IoU | Mean Dice |
@@ -301,6 +313,9 @@ The demonstration system is a full-stack web application designed for real-time 
 | CAE | **0.618** | 0.011 | 0.020 |
 | VAE | 0.524 | 0.025 | 0.044 |
 | DAE | 0.595 | 0.012 | 0.022 |
+
+![Pixel-Level Metrics](../outputs/figures/evaluation_pixel_metrics.png)
+*Figure 4.3: Pixel-level localization performance (Pixel AUC, IoU, Dice).*
 
 #### 4.2.3 Per-Category Analysis
 
@@ -330,6 +345,9 @@ The demonstration system is a full-stack web application designed for real-time 
 
 **Finding**: Models trained on structured patterns (grid, leather) generalize better to the Kolektor scratch detection task.
 
+![Cross-Dataset ROC Curves](../outputs/figures/cross_dataset_roc.png)
+*Figure 4.4: ROC Curves for MVTec-trained models evaluated on KolektorSDD2.*
+
 ### 4.4 CNN Classifier Results (NEU Dataset)
 
 | Metric | Value |
@@ -338,15 +356,22 @@ The demonstration system is a full-stack web application designed for real-time 
 | Classes | 6 (Crazing, Inclusion, Patches, Pitted, Rolled, Scratches) |
 | Training Epochs | 50 |
 
-![Confusion Matrix](outputs/figures/cnn_confusion_matrix.png)
+![Confusion Matrix](../outputs/figures/cnn_confusion_matrix.png)
+*Figure 4.5: Confusion matrix for CNN classifier on NEU test set.*
+
+![CNN Training Curves](../outputs/figures/cnn_training_curves.png)
+*Figure 4.6: Accuracy and Loss curves during CNN training.*
 
 ### 4.5 Visualization Examples
 
 #### Reconstruction Comparison
-![Reconstructions](outputs/figures/thesis_fig4_reconstructions.png)
+#### Reconstruction Comparison
+![Reconstructions](../outputs/figures/thesis_fig4_reconstructions.png)
+*Figure 4.7: Reconstruction examples showing input, reconstruction, error map, and ground truth.*
 
 #### Model Comparison Heatmap
-![Heatmap](outputs/figures/thesis_fig2_model_comparison.png)
+![Heatmap](../outputs/figures/thesis_fig2_model_comparison.png)
+*Figure 4.8: Heatmap comparison of anomaly localization across models.*
 
 ---
 

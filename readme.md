@@ -5,7 +5,8 @@
 [![Next.js](https://img.shields.io/badge/Next.js-15-black.svg)](https://nextjs.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-teal.svg)](https://fastapi.tiangolo.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Changelog](https://img.shields.io/badge/Changelog-v2.1.0-green.svg)](CHANGELOG.md)
+[![Changelog](https://img.shields.io/badge/Changelog-v2.2.0-green.svg)](CHANGELOG.md)
+[![Thesis](https://img.shields.io/badge/Thesis-Read_Final_Draft-purple.svg)](docs/thesis_paper.md)
 
 **Bachelor's Graduation Thesis** - Research on Industrial Defect Detection Methods Based on Deep Learning
 
@@ -87,6 +88,7 @@ This project implements **unsupervised anomaly detection** using autoencoder-bas
 ## 📁 Project Structure
 
 ```
+├── docs/               # Thesis documentation and figures
 ├── src/
 │   ├── config.py           # Configuration settings
 │   ├── data/               # Dataset loaders (MVTec, Kolektor, NEU)
@@ -165,7 +167,8 @@ cd web/frontend && npm run dev
 1. **CAE and Denoising AE outperform VAE** for anomaly detection
 2. **Models generalize across datasets** - MVTec → Kolektor with 0.69 AUC
 3. **Structured patterns** (grid, metal_nut) are easier to detect than textures
-4. **Supervised CNN** achieves near-perfect accuracy on NEU dataset
+4. **Information Bottleneck**: VAE's 128-dim vector bottleneck loses texture details compared to CAE's 65,536-dim spatial bottleneck.
+5. **Supervised CNN** achieves near-perfect accuracy on NEU dataset
 
 ## 💻 Hardware Requirements
 
