@@ -154,6 +154,9 @@ class VariationalAutoencoder(nn.Module):
             Sampled latent vector
         """
         if self.training:
+            # Clamp logvar for numerical stability to avoid exploding variance or NaNs
+            # Range [-20, 2] corresponds to std in range [4.5e-5, 2.7]
+            logvar = torch.clamp(logvar, min=-20, max=2)
             std = torch.exp(0.5 * logvar)
             eps = torch.randn_like(std)
             return mu + std * eps
