@@ -141,6 +141,18 @@ class DenoisingAutoencoder(nn.Module):
         error = self.get_reconstruction_error(x, reduction='none')
         anomaly_map = error.mean(dim=1, keepdim=True)
         return anomaly_map
+    
+    def get_anomaly_score(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Get image-level anomaly score.
+        
+        Args:
+            x: Input images (B, C, H, W)
+            
+        Returns:
+            Anomaly scores (B,) - higher values indicate anomalies
+        """
+        return self.get_reconstruction_error(x, reduction='mean')
 
 
 def create_denoising_ae(

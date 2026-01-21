@@ -32,14 +32,30 @@ const mvtecResults = {
 };
 
 const crossDatasetResults = [
-  { trained: "bottle", cae: 0.637, dae: 0.609, vae: null },
-  { trained: "carpet", cae: 0.665, dae: 0.682, vae: 0.536 },
-  { trained: "grid", cae: 0.690, dae: 0.688, vae: null },
-  { trained: "leather", cae: 0.668, dae: 0.646, vae: 0.532 },
-  { trained: "metal_nut", cae: 0.622, dae: 0.617, vae: null },
-  { trained: "tile", cae: 0.649, dae: 0.575, vae: 0.532 },
-  { trained: "wood", cae: 0.662, dae: 0.652, vae: null },
+  { trained: "bottle", cae: 0.637, vae: 0.496, dae: 0.609 },
+  { trained: "grid", cae: 0.690, vae: 0.574, dae: 0.688 },
+  { trained: "metal_nut", cae: 0.622, vae: 0.587, dae: 0.617 },
+  { trained: "tile", cae: 0.649, vae: 0.590, dae: 0.575 },
+  { trained: "wood", cae: 0.662, vae: 0.493, dae: 0.652 },
+  { trained: "carpet", cae: 0.665, vae: 0.545, dae: 0.682 },
+  { trained: "leather", cae: 0.668, vae: 0.463, dae: 0.646 },
 ];
+
+// Comprehensive Evaluation Summary (from comprehensive_metrics_report.csv)
+const evaluationSummary = {
+  CAE: {
+    image_auc: 0.580, image_ap: 0.796, precision: 0.757, recall: 0.982, f1: 0.849,
+    pixel_auc: 0.618, mean_iou: 0.011, mean_dice: 0.020, best: "screw", worst: "metal_nut"
+  },
+  VAE: {
+    image_auc: 0.412, image_ap: 0.706, precision: 0.720, recall: 0.990, f1: 0.822,
+    pixel_auc: 0.524, mean_iou: 0.025, mean_dice: 0.044, best: "wood", worst: "screw"
+  },
+  DAE: {
+    image_auc: 0.596, image_ap: 0.813, precision: 0.762, recall: 0.995, f1: 0.854,
+    pixel_auc: 0.595, mean_iou: 0.012, mean_dice: 0.022, best: "screw", worst: "metal_nut"
+  }
+};
 
 const figures = [
   { src: "/figures/thesis_fig1_datasets.png", title: "Datasets Overview", desc: "MVTec AD, KolektorSDD2, and NEU Surface Defect samples" },
@@ -245,6 +261,89 @@ export default function ResearchPage() {
               ))}
             </tbody>
           </table>
+        </div>
+      </motion.section>
+
+      {/* Comprehensive Evaluation Section */}
+      <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.55 }} className="mb-12">
+        <h2 className={`text-2xl font-bold mb-6 flex items-center gap-2 ${textPrimary}`}>
+          <Layers className="w-6 h-6 text-blue-400" /> Comprehensive Evaluation Metrics
+        </h2>
+        <p className={`mb-6 ${textSecondary}`}>Complete evaluation results across all 15 MVTec AD categories including image-level and pixel-level metrics.</p>
+        
+        <div className="grid md:grid-cols-3 gap-6">
+          {(["CAE", "VAE", "DAE"] as const).map((model, i) => {
+            const data = evaluationSummary[model];
+            const colors = { CAE: "blue", VAE: "purple", DAE: "orange" };
+            const color = colors[model];
+            return (
+              <motion.div 
+                key={model} 
+                initial={{ opacity: 0, y: 20 }} 
+                animate={{ opacity: 1, y: 0 }} 
+                transition={{ delay: 0.6 + i * 0.1 }}
+                className={`p-6 rounded-2xl border ${cardBg}`}
+              >
+                <div className={`text-2xl font-black mb-4 text-${color}-400`}>{model}</div>
+                
+                {/* Image-Level Metrics */}
+                <div className="mb-4">
+                  <div className={`text-xs uppercase tracking-wider mb-2 ${textMuted}`}>Image-Level</div>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div className={`p-2 rounded-lg ${tableBg}`}>
+                      <div className={textMuted}>AUC</div>
+                      <div className={`font-bold ${textPrimary}`}>{data.image_auc.toFixed(3)}</div>
+                    </div>
+                    <div className={`p-2 rounded-lg ${tableBg}`}>
+                      <div className={textMuted}>AP</div>
+                      <div className={`font-bold ${textPrimary}`}>{data.image_ap.toFixed(3)}</div>
+                    </div>
+                    <div className={`p-2 rounded-lg ${tableBg}`}>
+                      <div className={textMuted}>Precision</div>
+                      <div className={`font-bold ${textPrimary}`}>{data.precision.toFixed(3)}</div>
+                    </div>
+                    <div className={`p-2 rounded-lg ${tableBg}`}>
+                      <div className={textMuted}>Recall</div>
+                      <div className={`font-bold ${textPrimary}`}>{data.recall.toFixed(3)}</div>
+                    </div>
+                  </div>
+                  <div className={`mt-2 p-2 rounded-lg text-center ${tableBg}`}>
+                    <div className={textMuted}>F1 Score</div>
+                    <div className={`text-xl font-bold text-${color}-400`}>{data.f1.toFixed(3)}</div>
+                  </div>
+                </div>
+                
+                {/* Pixel-Level Metrics */}
+                <div className="mb-4">
+                  <div className={`text-xs uppercase tracking-wider mb-2 ${textMuted}`}>Pixel-Level</div>
+                  <div className="grid grid-cols-3 gap-2 text-sm">
+                    <div className={`p-2 rounded-lg ${tableBg} text-center`}>
+                      <div className={textMuted}>Pixel AUC</div>
+                      <div className={`font-bold ${textPrimary}`}>{data.pixel_auc.toFixed(3)}</div>
+                    </div>
+                    <div className={`p-2 rounded-lg ${tableBg} text-center`}>
+                      <div className={textMuted}>IoU</div>
+                      <div className={`font-bold ${textPrimary}`}>{data.mean_iou.toFixed(3)}</div>
+                    </div>
+                    <div className={`p-2 rounded-lg ${tableBg} text-center`}>
+                      <div className={textMuted}>Dice</div>
+                      <div className={`font-bold ${textPrimary}`}>{data.mean_dice.toFixed(3)}</div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Best/Worst */}
+                <div className="flex gap-2 text-xs">
+                  <div className="flex-1 p-2 rounded-lg bg-emerald-500/10 text-emerald-400">
+                    <CheckCircle className="w-3 h-3 inline mr-1" /> Best: {data.best}
+                  </div>
+                  <div className="flex-1 p-2 rounded-lg bg-rose-500/10 text-rose-400">
+                    <XCircle className="w-3 h-3 inline mr-1" /> Worst: {data.worst}
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
       </motion.section>
 
