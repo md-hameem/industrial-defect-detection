@@ -16,11 +16,11 @@ const mvtecResults = {
     { category: "transistor", auc: 0.403 }, { category: "wood", auc: 0.948 }, { category: "zipper", auc: 0.506 },
   ],
   VAE: [
-    { category: "bottle", auc: 0.457 }, { category: "cable", auc: 0.403 }, { category: "capsule", auc: 0.590 },
-    { category: "carpet", auc: 0.250 }, { category: "grid", auc: 0.500 }, { category: "hazelnut", auc: 0.326 },
-    { category: "leather", auc: 0.238 }, { category: "metal_nut", auc: 0.673 }, { category: "pill", auc: 0.408 },
-    { category: "screw", auc: 1.000 }, { category: "tile", auc: 0.388 }, { category: "toothbrush", auc: 0.711 },
-    { category: "transistor", auc: 0.400 }, { category: "wood", auc: 0.360 }, { category: "zipper", auc: 0.441 },
+    { category: "bottle", auc: 0.199 }, { category: "cable", auc: 0.361 }, { category: "capsule", auc: 0.482 },
+    { category: "carpet", auc: 0.617 }, { category: "grid", auc: 0.297 }, { category: "hazelnut", auc: 0.255 },
+    { category: "leather", auc: 0.303 }, { category: "metal_nut", auc: 0.152 }, { category: "pill", auc: 0.602 },
+    { category: "screw", auc: 0.074 }, { category: "tile", auc: 0.569 }, { category: "toothbrush", auc: 0.686 },
+    { category: "transistor", auc: 0.303 }, { category: "wood", auc: 0.804 }, { category: "zipper", auc: 0.480 },
   ],
   DAE: [
     { category: "bottle", auc: 0.537 }, { category: "cable", auc: 0.464 }, { category: "capsule", auc: 0.466 },
@@ -43,7 +43,10 @@ const crossDatasetResults = [
 
 const figures = [
   { src: "/figures/thesis_fig1_datasets.png", title: "Datasets Overview", desc: "MVTec AD, KolektorSDD2, and NEU Surface Defect samples" },
-  { src: "/figures/thesis_fig2_model_comparison.png", title: "Model Comparison", desc: "CAE vs DAE performance across MVTec categories" },
+  { src: "/figures/thesis_fig2_model_comparison.png", title: "Model Comparison", desc: "CAE vs VAE vs DAE performance across MVTec categories" },
+  { src: "/figures/model_comparison_bar.png", title: "Performance by Category", desc: "Grouped bar chart comparing all three autoencoder models" },
+  { src: "/figures/model_heatmap.png", title: "AUC Heatmap", desc: "Performance heatmap across all categories and models" },
+  { src: "/figures/model_mean_comparison.png", title: "Average Performance", desc: "Mean AUC scores for CAE, VAE, and DAE models" },
   { src: "/figures/thesis_fig3_generalization.png", title: "Cross-Dataset Generalization", desc: "MVTec to Kolektor transfer learning heatmap" },
   { src: "/figures/thesis_fig4_reconstructions.png", title: "Reconstruction Examples", desc: "Original, reconstruction, error map, and ground truth" },
 ];

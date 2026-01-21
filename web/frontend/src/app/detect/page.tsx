@@ -54,7 +54,7 @@ export default function DetectPage() {
   const [error, setError] = useState<string | null>(null);
   const [compareMode, setCompareMode] = useState(false);
   const [batchProgress, setBatchProgress] = useState({ current: 0, total: 0 });
-  const [expandedResult, setExpandedResult] = useState<number | null>(null);
+  const [expandedResult, setExpandedResult] = useState<number | string | null>(null);
 
   const saveToHistory = (result: PredictionResult, filename: string) => {
     const saved = localStorage.getItem("defect_history");
@@ -157,6 +157,29 @@ export default function DetectPage() {
 
   const autoencoderResults = results.filter((r): r is AutoencoderResult => r.model_type === "autoencoder");
   const classifierResults = results.filter((r): r is ClassifierResult => r.model_type === "classifier");
+
+  // Group autoencoder results by image index for comparison view
+  const groupedResults = compareMode ? (() => {
+    const groups: { imageIndex: number; original: string; models: { [key: string]: AutoencoderResult } }[] = [];
+    const numImages = uploadedImages.length;
+    for (let i = 0; i < numImages; i++) {
+      const group: { imageIndex: number; original: string; models: { [key: string]: AutoencoderResult } } = {
+        imageIndex: i,
+        original: uploadedImages[i]?.preview || "",
+        models: {}
+      };
+      AUTOENCODER_TYPES.forEach((modelType, modelIdx) => {
+        const resultIdx = i * AUTOENCODER_TYPES.length + modelIdx;
+        if (autoencoderResults[resultIdx]) {
+          group.models[modelType] = autoencoderResults[resultIdx];
+        }
+      });
+      if (Object.keys(group.models).length > 0) {
+        groups.push(group);
+      }
+    }
+    return groups;
+  })() : [];
 
   const stats = results.length > 0 ? {
     total: results.length,
@@ -494,49 +517,193 @@ export default function DetectPage() {
                     </motion.div>
                   ))}
                   
-                  {/* Autoencoder Results */}
-                  {autoencoderResults.map((result, i) => {
-                    const ScoreIcon = getScoreIcon(result.anomaly_score);
-                    return (
-                      <motion.div key={`ae-${i}`} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className={`p-4 rounded-xl bg-gradient-to-br ${getScoreBg(result.anomaly_score)} border ${darkMode ? "border-white/5" : "border-slate-200"} cursor-pointer`} onClick={() => setExpandedResult(expandedResult === i ? null : i)}>
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="flex items-center gap-3">
-                            <span className={`px-3 py-1 rounded-lg font-bold text-sm ${darkMode ? "bg-slate-700/50" : "bg-slate-200"}`}>{result.model}</span>
-                            <span className={`text-sm ${textSecondary}`}>{result.category}</span>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <div className="text-right">
-                              <div className={`text-2xl font-black flex items-center gap-2 ${getScoreColor(result.anomaly_score)}`}><ScoreIcon className="w-5 h-5" />{result.anomaly_score.toFixed(3)}</div>
-                              <div className={`text-sm ${getScoreColor(result.anomaly_score)}`}>{getScoreLabel(result.anomaly_score)}</div>
+                  {/* Autoencoder Results - Comparison View */}
+                  {compareMode && groupedResults.length > 0 ? (
+                    <div className="space-y-6">
+                      {groupedResults.map((group, groupIdx) => (
+                        <motion.div
+                          key={`comparison-${groupIdx}`}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: groupIdx * 0.1 }}
+                          className={`p-4 rounded-xl border ${darkMode ? "bg-slate-800/30 border-white/10" : "bg-white border-slate-200"}`}
+                        >
+                          {/* Image Header */}
+                          <div className={`flex items-center gap-3 mb-4 pb-3 border-b ${darkMode ? "border-white/10" : "border-slate-200"}`}>
+                            <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
+                              <img src={group.original} alt="Original" className="w-full h-full object-cover" />
                             </div>
-                            <ChevronDown className={`w-5 h-5 ${textMuted} transition-transform ${expandedResult === i ? "rotate-180" : ""}`} />
+                            <div>
+                              <h3 className={`font-bold ${textPrimary}`}>Image {groupIdx + 1}</h3>
+                              <p className={`text-sm ${textMuted}`}>{uploadedImages[groupIdx]?.file.name || "Uploaded image"}</p>
+                            </div>
                           </div>
-                        </div>
-                        <div className="grid grid-cols-3 gap-3">
-                          {[{ label: "Original", img: result.original_image }, { label: "Reconstruction", img: result.reconstruction }, { label: "Heatmap", img: result.heatmap }].map((item, j) => (
-                            <motion.div key={j} whileHover={{ scale: 1.05 }} className="cursor-pointer group relative" onClick={(e) => { e.stopPropagation(); downloadImage(item.img, `${item.label.toLowerCase()}_${result.model}.png`); }}>
-                              <p className={`text-xs mb-1 ${textMuted}`}>{item.label}</p>
-                              <div className="relative rounded-lg overflow-hidden">
-                                <img src={`data:image/png;base64,${item.img}`} alt={item.label} className="w-full rounded-lg" />
-                                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"><Download className="w-6 h-6 text-white" /></div>
+                          
+                          {/* Model Comparison Grid - Summary */}
+                          <div className="grid grid-cols-3 gap-4 mb-4">
+                            {AUTOENCODER_TYPES.map((modelType) => {
+                              const result = group.models[modelType];
+                              if (!result) return (
+                                <div key={modelType} className={`p-3 rounded-lg ${darkMode ? "bg-slate-700/30" : "bg-slate-100"} text-center`}>
+                                  <span className={`text-sm ${textMuted}`}>{modelType} - No result</span>
+                                </div>
+                              );
+                              
+                              const ScoreIcon = getScoreIcon(result.anomaly_score);
+                              const modelColors: Record<string, string> = {
+                                CAE: "from-blue-500/20 to-blue-500/5 border-blue-500/30",
+                                VAE: "from-purple-500/20 to-purple-500/5 border-purple-500/30",
+                                DAE: "from-orange-500/20 to-orange-500/5 border-orange-500/30"
+                              };
+                              const labelColors: Record<string, string> = {
+                                CAE: "bg-blue-500/30 text-blue-400",
+                                VAE: "bg-purple-500/30 text-purple-400",
+                                DAE: "bg-orange-500/30 text-orange-400"
+                              };
+                              
+                              return (
+                                <div key={modelType} className={`p-3 rounded-xl bg-gradient-to-br ${modelColors[modelType]} border`}>
+                                  {/* Model Label & Score */}
+                                  <div className="flex items-center justify-between mb-2">
+                                    <span className={`px-2 py-0.5 rounded text-xs font-bold ${labelColors[modelType]}`}>{modelType}</span>
+                                    <div className={`flex items-center gap-1 font-bold ${getScoreColor(result.anomaly_score)}`}>
+                                      <ScoreIcon className="w-4 h-4" />
+                                      <span>{result.anomaly_score.toFixed(3)}</span>
+                                    </div>
+                                  </div>
+                                  
+                                  {/* Heatmap */}
+                                  <motion.div 
+                                    whileHover={{ scale: 1.02 }} 
+                                    className="cursor-pointer group relative rounded-lg overflow-hidden"
+                                    onClick={() => downloadImage(result.heatmap, `heatmap_${modelType}_${groupIdx + 1}.png`)}
+                                  >
+                                    <img src={`data:image/png;base64,${result.heatmap}`} alt={`${modelType} Heatmap`} className="w-full rounded-lg" />
+                                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                      <Download className="w-5 h-5 text-white" />
+                                    </div>
+                                  </motion.div>
+                                  
+                                  {/* Status Label */}
+                                  <div className={`mt-2 text-center text-xs font-medium ${getScoreColor(result.anomaly_score)}`}>
+                                    {getScoreLabel(result.anomaly_score)}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+
+                          {/* Detailed Cards for Each Model */}
+                          <div className={`pt-4 border-t ${darkMode ? "border-white/10" : "border-slate-200"}`}>
+                            <p className={`text-xs font-medium mb-3 ${textMuted}`}>Detailed Results</p>
+                            <div className="space-y-3">
+                              {AUTOENCODER_TYPES.map((modelType) => {
+                                const result = group.models[modelType];
+                                if (!result) return null;
+                                
+                                const ScoreIcon = getScoreIcon(result.anomaly_score);
+                                const resultKey = `${groupIdx}-${modelType}`;
+                                const isExpanded = expandedResult === resultKey;
+                                
+                                return (
+                                  <motion.div 
+                                    key={resultKey} 
+                                    className={`p-3 rounded-xl bg-gradient-to-br ${getScoreBg(result.anomaly_score)} border ${darkMode ? "border-white/5" : "border-slate-200"} cursor-pointer`}
+                                    onClick={() => setExpandedResult(isExpanded ? null : resultKey)}
+                                  >
+                                    <div className="flex items-center justify-between mb-2">
+                                      <div className="flex items-center gap-2">
+                                        <span className={`px-2 py-0.5 rounded-lg font-bold text-xs ${darkMode ? "bg-slate-700/50" : "bg-slate-200"}`}>{result.model}</span>
+                                        <span className={`text-xs ${textSecondary}`}>{result.category}</span>
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        <div className={`font-bold flex items-center gap-1 ${getScoreColor(result.anomaly_score)}`}>
+                                          <ScoreIcon className="w-4 h-4" />
+                                          <span className="text-sm">{result.anomaly_score.toFixed(3)}</span>
+                                        </div>
+                                        <ChevronDown className={`w-4 h-4 ${textMuted} transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+                                      </div>
+                                    </div>
+                                    
+                                    <AnimatePresence>
+                                      {isExpanded && (
+                                        <motion.div 
+                                          initial={{ opacity: 0, height: 0 }} 
+                                          animate={{ opacity: 1, height: "auto" }} 
+                                          exit={{ opacity: 0, height: 0 }}
+                                          className="pt-3"
+                                        >
+                                          <div className="grid grid-cols-3 gap-2">
+                                            {[{ label: "Original", img: result.original_image }, { label: "Reconstruction", img: result.reconstruction }, { label: "Heatmap", img: result.heatmap }].map((item, j) => (
+                                              <motion.div key={j} whileHover={{ scale: 1.03 }} className="cursor-pointer group relative" onClick={(e) => { e.stopPropagation(); downloadImage(item.img, `${item.label.toLowerCase()}_${result.model}.png`); }}>
+                                                <p className={`text-xs mb-1 ${textMuted}`}>{item.label}</p>
+                                                <div className="relative rounded-lg overflow-hidden">
+                                                  <img src={`data:image/png;base64,${item.img}`} alt={item.label} className="w-full rounded-lg" />
+                                                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"><Download className="w-4 h-4 text-white" /></div>
+                                                </div>
+                                              </motion.div>
+                                            ))}
+                                          </div>
+                                          <div className={`mt-2 pt-2 border-t ${darkMode ? "border-white/10" : "border-slate-200"} flex justify-between text-xs ${textMuted}`}>
+                                            <span><Clock className="w-3 h-3 inline mr-1" />{result.processing_time.toFixed(2)}s</span>
+                                            <span><Layers className="w-3 h-3 inline mr-1" />{result.model}</span>
+                                          </div>
+                                        </motion.div>
+                                      )}
+                                    </AnimatePresence>
+                                  </motion.div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  ) : (
+                    /* Standard Autoencoder Results (non-comparison) */
+                    autoencoderResults.map((result, i) => {
+                      const ScoreIcon = getScoreIcon(result.anomaly_score);
+                      return (
+                        <motion.div key={`ae-${i}`} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className={`p-4 rounded-xl bg-gradient-to-br ${getScoreBg(result.anomaly_score)} border ${darkMode ? "border-white/5" : "border-slate-200"} cursor-pointer`} onClick={() => setExpandedResult(expandedResult === i ? null : i)}>
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-3">
+                              <span className={`px-3 py-1 rounded-lg font-bold text-sm ${darkMode ? "bg-slate-700/50" : "bg-slate-200"}`}>{result.model}</span>
+                              <span className={`text-sm ${textSecondary}`}>{result.category}</span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <div className="text-right">
+                                <div className={`text-2xl font-black flex items-center gap-2 ${getScoreColor(result.anomaly_score)}`}><ScoreIcon className="w-5 h-5" />{result.anomaly_score.toFixed(3)}</div>
+                                <div className={`text-sm ${getScoreColor(result.anomaly_score)}`}>{getScoreLabel(result.anomaly_score)}</div>
                               </div>
-                            </motion.div>
-                          ))}
-                        </div>
-                        <AnimatePresence>
-                          {expandedResult === i && (
-                            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className={`mt-4 pt-4 border-t ${darkMode ? "border-white/10" : "border-slate-200"}`}>
-                              <div className="grid grid-cols-3 gap-4 text-sm">
-                                <div><span className={textMuted}>Processing Time</span><div className={`font-bold flex items-center gap-1 ${textPrimary}`}><Clock className="w-4 h-4 text-blue-400" /> {result.processing_time.toFixed(2)}s</div></div>
-                                <div><span className={textMuted}>Model Type</span><div className={`font-bold flex items-center gap-1 ${textPrimary}`}><Layers className="w-4 h-4 text-purple-400" /> {result.model}</div></div>
-                                <div><span className={textMuted}>Category</span><div className={`font-bold ${textPrimary}`}>{result.category}</div></div>
-                              </div>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </motion.div>
-                    );
-                  })}
+                              <ChevronDown className={`w-5 h-5 ${textMuted} transition-transform ${expandedResult === i ? "rotate-180" : ""}`} />
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-3 gap-3">
+                            {[{ label: "Original", img: result.original_image }, { label: "Reconstruction", img: result.reconstruction }, { label: "Heatmap", img: result.heatmap }].map((item, j) => (
+                              <motion.div key={j} whileHover={{ scale: 1.05 }} className="cursor-pointer group relative" onClick={(e) => { e.stopPropagation(); downloadImage(item.img, `${item.label.toLowerCase()}_${result.model}.png`); }}>
+                                <p className={`text-xs mb-1 ${textMuted}`}>{item.label}</p>
+                                <div className="relative rounded-lg overflow-hidden">
+                                  <img src={`data:image/png;base64,${item.img}`} alt={item.label} className="w-full rounded-lg" />
+                                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"><Download className="w-6 h-6 text-white" /></div>
+                                </div>
+                              </motion.div>
+                            ))}
+                          </div>
+                          <AnimatePresence>
+                            {expandedResult === i && (
+                              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className={`mt-4 pt-4 border-t ${darkMode ? "border-white/10" : "border-slate-200"}`}>
+                                <div className="grid grid-cols-3 gap-4 text-sm">
+                                  <div><span className={textMuted}>Processing Time</span><div className={`font-bold flex items-center gap-1 ${textPrimary}`}><Clock className="w-4 h-4 text-blue-400" /> {result.processing_time.toFixed(2)}s</div></div>
+                                  <div><span className={textMuted}>Model Type</span><div className={`font-bold flex items-center gap-1 ${textPrimary}`}><Layers className="w-4 h-4 text-purple-400" /> {result.model}</div></div>
+                                  <div><span className={textMuted}>Category</span><div className={`font-bold ${textPrimary}`}>{result.category}</div></div>
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </motion.div>
+                      );
+                    })
+                  )}
                 </motion.div>
               ) : (
                 <div className="text-center py-20">
