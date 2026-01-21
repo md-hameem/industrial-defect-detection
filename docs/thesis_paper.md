@@ -123,6 +123,12 @@ L = MSE(decoder(encoder(x_noisy)), x)
 - 5,354 high-resolution images (700×700 to 1024×1024)
 - Pixel-level ground truth masks for segmentation
 
+![MVTec AD Samples](../outputs/figures/thesis_fig1_datasets.png)
+*Figure 2.1: Example images from the MVTec AD dataset categories.*
+
+![MVTec Statistics](../outputs/figures/mvtec_statistics.png)
+*Figure 2.2: Distribution of normal vs. anomalous samples across categories.*
+
 #### 2.3.2 KolektorSDD2
 - Surface defect dataset from real production line
 - 356 images with scratch and crack defects
@@ -318,6 +324,27 @@ The demonstration system is a full-stack web application designed for real-time 
 *Figure 4.3: Pixel-level localization performance (Pixel AUC, IoU, Dice).*
 
 #### 4.2.3 Per-Category Analysis
+
+**Detailed Performance by Category (Image AUC):**
+
+| Category | CAE | VAE | DAE | Best Model |
+|----------|-----|-----|-----|------------|
+| Bottle | 0.550 | 0.199 | 0.537 | CAE |
+| Cable | 0.458 | 0.361 | 0.464 | DAE |
+| Capsule | 0.477 | 0.482 | 0.466 | VAE |
+| Carpet | 0.330 | 0.617 | 0.332 | **VAE** |
+| Grid | 0.779 | 0.297 | **0.870** | **DAE** |
+| Hazelnut | 0.877 | 0.255 | **0.888** | **DAE** |
+| Leather | 0.447 | 0.303 | 0.389 | CAE |
+| Metal Nut | 0.268 | 0.152 | 0.268 | CAE/DAE |
+| Pill | 0.751 | 0.601 | 0.762 | **DAE** |
+| Screw | **0.979** | 0.074 | **0.986** | **DAE** |
+| Tile | 0.822 | 0.569 | 0.808 | CAE |
+| Toothbrush | 0.656 | 0.686 | 0.650 | VAE |
+| Transistor | 0.403 | 0.303 | 0.445 | DAE |
+| Wood | **0.948** | **0.804** | **0.962** | **DAE** |
+| Zipper | 0.506 | 0.480 | 0.487 | CAE |
+| **MEAN** | **0.580** | **0.412** | **0.596** | **DAE** |
 
 **Best Categories:**
 - Screw: CAE=0.979, DAE=0.986, VAE=0.074* (unstable)
@@ -518,9 +545,164 @@ Thesis/
 | DAE | 2,764,099 |
 | CNN | 11,177,030 |
 
-### Appendix D: Web Application Screenshots
+### Appendix D: Detailed Reconstruction Results (MVTec AD)
 
-[Include screenshots from thesis_figures_checklist.md]
+This appendix presents qualitative results for the Convolutional Autoencoder (CAE) across all 15 MVTec AD categories. Each figure shows the input image (original), the reconstructed image, the pixel-wise squared error, and the ground truth anomaly mask (if available).
+
+#### D.1 Bottle
+![Bottle Reconstructions](../outputs/figures/cae_bottle_reconstructions.png)
+*Figure D.1: CAE reconstructions for Bottle category.*
+
+#### D.2 Cable
+![Cable Reconstructions](../outputs/figures/cae_cable_reconstruction.png)
+*Figure D.2: CAE reconstructions for Cable category.*
+
+#### D.3 Capsule
+![Capsule Reconstructions](../outputs/figures/cae_capsule_reconstruction.png)
+*Figure D.3: CAE reconstructions for Capsule category.*
+
+#### D.4 Carpet
+![Carpet Reconstructions](../outputs/figures/cae_carpet_reconstruction.png)
+*Figure D.4: CAE reconstructions for Carpet category.*
+
+#### D.5 Grid
+![Grid Reconstructions](../outputs/figures/cae_grid_reconstruction.png)
+*Figure D.5: CAE reconstructions for Grid category.*
+
+#### D.6 Hazelnut
+![Hazelnut Reconstructions](../outputs/figures/cae_hazelnut_reconstruction.png)
+*Figure D.6: CAE reconstructions for Hazelnut category.*
+
+#### D.7 Leather
+![Leather Reconstructions](../outputs/figures/cae_leather_reconstruction.png)
+*Figure D.7: CAE reconstructions for Leather category.*
+
+#### D.8 Metal Nut
+![Metal Nut Reconstructions](../outputs/figures/cae_metal_nut_reconstruction.png)
+*Figure D.8: CAE reconstructions for Metal Nut category.*
+
+#### D.9 Pill
+![Pill Reconstructions](../outputs/figures/cae_pill_reconstruction.png)
+*Figure D.9: CAE reconstructions for Pill category.*
+
+#### D.10 Screw
+![Screw Reconstructions](../outputs/figures/cae_screw_reconstruction.png)
+*Figure D.10: CAE reconstructions for Screw category.*
+
+#### D.11 Tile
+![Tile Reconstructions](../outputs/figures/cae_tile_reconstruction.png)
+*Figure D.11: CAE reconstructions for Tile category.*
+
+#### D.12 Toothbrush
+![Toothbrush Reconstructions](../outputs/figures/cae_toothbrush_reconstruction.png)
+*Figure D.12: CAE reconstructions for Toothbrush category.*
+
+#### D.13 Transistor
+![Transistor Reconstructions](../outputs/figures/cae_transistor_reconstruction.png)
+*Figure D.13: CAE reconstructions for Transistor category.*
+
+#### D.14 Wood
+![Wood Reconstructions](../outputs/figures/cae_wood_reconstruction.png)
+*Figure D.14: CAE reconstructions for Wood category.*
+
+#### D.15 Zipper
+![Zipper Reconstructions](../outputs/figures/cae_zipper_reconstruction.png)
+*Figure D.15: CAE reconstructions for Zipper category.*
+
+---
+
+### Appendix E: Training Loss Curves
+
+This appendix displays the training and validation loss curves for both CAE and DAE models, demonstrating convergence stability.
+
+#### E.1 Bottle
+| CAE Training | DAE Training |
+|--------------|--------------|
+| ![CAE Bottle](../outputs/figures/cae_bottle_training.png) | ![DAE Bottle](../outputs/figures/dae_bottle_training.png) |
+
+#### E.2 Cable
+| CAE Training | DAE Training |
+|--------------|--------------|
+| ![CAE Cable](../outputs/figures/cae_cable_training.png) | ![DAE Cable](../outputs/figures/dae_cable_training.png) |
+
+#### E.3 Capsule
+| CAE Training | DAE Training |
+|--------------|--------------|
+| ![CAE Capsule](../outputs/figures/cae_capsule_training.png) | ![DAE Capsule](../outputs/figures/dae_capsule_training.png) |
+
+#### E.4 Carpet
+| CAE Training | DAE Training |
+|--------------|--------------|
+| ![CAE Carpet](../outputs/figures/cae_carpet_training.png) | ![DAE Carpet](../outputs/figures/dae_carpet_training.png) |
+
+#### E.5 Grid
+| CAE Training | DAE Training |
+|--------------|--------------|
+| ![CAE Grid](../outputs/figures/cae_grid_training.png) | ![DAE Grid](../outputs/figures/dae_grid_training.png) |
+
+#### E.6 Hazelnut
+| CAE Training | DAE Training |
+|--------------|--------------|
+| ![CAE Hazelnut](../outputs/figures/cae_hazelnut_training.png) | ![DAE Hazelnut](../outputs/figures/dae_hazelnut_training.png) |
+
+#### E.7 Leather
+| CAE Training | DAE Training |
+|--------------|--------------|
+| ![CAE Leather](../outputs/figures/cae_leather_training.png) | ![DAE Leather](../outputs/figures/dae_leather_training.png) |
+
+#### E.8 Metal Nut
+| CAE Training | DAE Training |
+|--------------|--------------|
+| ![CAE Metal Nut](../outputs/figures/cae_metal_nut_training.png) | ![DAE Metal Nut](../outputs/figures/dae_metal_nut_training.png) |
+
+#### E.9 Pill
+| CAE Training | DAE Training |
+|--------------|--------------|
+| ![CAE Pill](../outputs/figures/cae_pill_training.png) | ![DAE Pill](../outputs/figures/dae_pill_training.png) |
+
+#### E.10 Screw
+| CAE Training | DAE Training |
+|--------------|--------------|
+| ![CAE Screw](../outputs/figures/cae_screw_training.png) | ![DAE Screw](../outputs/figures/dae_screw_training.png) |
+
+#### E.11 Tile
+| CAE Training | DAE Training |
+|--------------|--------------|
+| ![CAE Tile](../outputs/figures/cae_tile_training.png) | ![DAE Tile](../outputs/figures/dae_tile_training.png) |
+
+#### E.12 Toothbrush
+| CAE Training | DAE Training |
+|--------------|--------------|
+| ![CAE Toothbrush](../outputs/figures/cae_toothbrush_training.png) | ![DAE Toothbrush](../outputs/figures/dae_toothbrush_training.png) |
+
+#### E.13 Transistor
+| CAE Training | DAE Training |
+|--------------|--------------|
+| ![CAE Transistor](../outputs/figures/cae_transistor_training.png) | ![DAE Transistor](../outputs/figures/dae_transistor_training.png) |
+
+#### E.14 Wood
+| CAE Training | DAE Training |
+|--------------|--------------|
+| ![CAE Wood](../outputs/figures/cae_wood_training.png) | ![DAE Wood](../outputs/figures/dae_wood_training.png) |
+
+#### E.15 Zipper
+| CAE Training | DAE Training |
+|--------------|--------------|
+| ![CAE Zipper](../outputs/figures/cae_zipper_training.png) | ![DAE Zipper](../outputs/figures/dae_zipper_training.png) |
+
+---
+
+### Appendix F: Web Application Screenshots
+
+The developed web application provides an intuitive interface for industrial operators.
+
+#### F.1 Homepage
+![Web App Homepage](../web/frontend/public/homepage.png)
+*Figure F.1: Landing page of the Industrial Defect Detection System.*
+
+#### F.2 Real-Time Detection
+![Detection Interface](../web/frontend/public/detectpage.png)
+*Figure F.2: Detection interface comparing Normal vs. Anomalous heatmap outputs.*
 
 ---
 
