@@ -178,26 +178,50 @@ All images are:
 
 #### 3.3.1 Encoder
 ```python
-Conv2d(3, 32, 3, stride=2) → BatchNorm → ReLU
-Conv2d(32, 64, 3, stride=2) → BatchNorm → ReLU
-Conv2d(64, 128, 3, stride=2) → BatchNorm → ReLU
-Conv2d(128, 256, 3, stride=2) → BatchNorm → ReLU
-# Output: 16×16×256 (65,536 features)
+Input (256×256×3)
+↓
+Conv2d(3, 32, 3, stride=2, padding=1) → BatchNorm → ReLU
+↓
+Conv2d(32, 64, 3, stride=2, padding=1) → BatchNorm → ReLU
+↓
+Conv2d(64, 128, 3, stride=2, padding=1) → BatchNorm → ReLU
+↓
+Conv2d(128, 256, 3, stride=2, padding=1) → BatchNorm → ReLU
+↓
+Output: 16×16×256 (65,536 features)
 ```
 
 #### 3.3.2 Decoder
 ```python
-ConvTranspose2d(256, 128, 3, stride=2) → BatchNorm → ReLU
-ConvTranspose2d(128, 64, 3, stride=2) → BatchNorm → ReLU
-ConvTranspose2d(64, 32, 3, stride=2) → BatchNorm → ReLU
-ConvTranspose2d(32, 3, 3, stride=2)
-# Output: 256×256×3
+Input (16×16×256)
+↓
+ConvTranspose2d(256, 128, 3, stride=2, padding=1, output_padding=1) → BatchNorm → ReLU
+↓
+ConvTranspose2d(128, 64, 3, stride=2, padding=1, output_padding=1) → BatchNorm → ReLU
+↓
+ConvTranspose2d(64, 32, 3, stride=2, padding=1, output_padding=1) → BatchNorm → ReLU
+↓
+ConvTranspose2d(32, 3, 3, stride=2, padding=1, output_padding=1)
+↓
+Output: 256×256×3
 ```
 
 #### 3.3.3 VAE-Specific Components
+- **Latent Dimension**: 128 channels (dense layers project 16×16×256 ↔ 128)
 - **Reparameterization Trick**: z = μ + σ × ε, where ε ~ N(0, 1)
-- **Logvar Clamping**: clamp(logvar, -20, 2) for numerical stability
-- **KL Annealing**: β increases from 0 to 1 over 10 epochs
+- **Logvar Clamping**: clamp(logvar, -20, 2) to prevent numerical instability during training
+- **KL Annealing**: β increases linearly from 0 to 1 over first 10 epochs
+
+#### 3.3.4 Supervised CNN Baseline (Lightweight)
+A lightweight CNN is implemented for supervised classification on the NEU dataset to serve as a baseline.
+
+**Architecture:**
+- **Feature Extractor**: 4 Convolutional Blocks
+  - Channels: [32, 64, 128, 256]
+  - Each block: Conv2d(3×3) → BatchNorm → ReLU → MaxPool2d(2×2)
+- **Global Pooling**: Adaptive Average Pooling (reduces spatial dims to 1×1)
+- **Classifier Head**: Dropout(p=0.5) → Linear(256 → 6 classes)
+- **Total Parameters**: ~11.1M (optimized for CPU inference)
 
 ### 3.4 Training Configuration
 
@@ -225,6 +249,26 @@ ConvTranspose2d(32, 3, 3, stride=2)
 - Compute ROC-AUC, AP, Precision, Recall, F1
 - Find optimal threshold using F1 maximization
 
+### 3.7 Web Application Implementation
+
+The demonstration system is a full-stack web application designed for real-time interaction.
+
+**Frontend (Next.js 16):**
+- **Framework**: Next.js 16.1.3 (App Router) with React 19
+- **Styling**: Tailwind CSS v4 for responsive design
+- **Animations**: Framer Motion for smooth UI transitions
+- **State Management**: React Hooks for upload and inference state
+- **Visualization**: HTML5 Canvas for heatmap overlay rendering
+
+**Backend (FastAPI):**
+- **API Server**: FastAPI 0.109.0 (async Python)
+- **Inference Engine**: PyTorch 2.0+ (CPU-optimized)
+- **Image Processing**: Pillow and NumPy for tensor conversion
+- **Endpoints**:
+  - `/predict/autoencoder`: Handles CAE/VAE/DAE inference
+  - `/predict/cnn`: Handles supervised classification
+  - `/health`: System status check
+
 ---
 
 ## Chapter 4: Experiments and Results
@@ -234,6 +278,11 @@ ConvTranspose2d(32, 3, 3, stride=2)
 - **Hardware**: Intel Core i5 / NVIDIA GTX 1660
 - **Software**: Python 3.12, PyTorch 2.0+, scikit-learn
 - **Dataset Split**: Official MVTec AD train/test split
+- **Implementation**:
+  - `01_train_cae.ipynb`: CAE training loop
+  - `02_train_vae_v2.ipynb`: VAE training with reduced LR and KL annealing
+  - `03_train_denoising_ae.ipynb`: DAE training with noise injection
+  - `08_comprehensive_evaluation.ipynb`: Full evaluation pipeline
 
 ### 4.2 MVTec AD Results
 
@@ -309,9 +358,13 @@ ConvTranspose2d(32, 3, 3, stride=2)
 
 2. **VAE struggles with stability**: Despite theoretical advantages of the probabilistic latent space, VAE underperforms due to KL divergence optimization challenges, particularly on texture categories.
 
-3. **High recall, moderate precision**: All models achieve >98% recall but ~75% precision, indicating a bias toward predicting anomalies (few false negatives, more false positives).
+3. **Information Bottleneck Difference**:
+   - The CAE retains spatial information in its 16x16x256 latent bottleneck (65,536 dimensions), allowing it to preserve fine-grained texture details.
+   - The VAE compresses inputs into a dense 128-dimensional vector. This extreme compression (factor of ~500x difference) forces the VAE to prioritize global semantics over local textures, explaining its poor performance on texture-based anomalies like 'carpet' and 'leather'.
 
-4. **Category-dependent performance**: Performance varies significantly across categories. Structured objects (screw, wood) are easier than complex textures (carpet, leather).
+4. **High recall, moderate precision**: All models achieve >98% recall but ~75% precision, indicating a bias toward predicting anomalies (few false negatives, more false positives).
+
+5. **Category-dependent performance**: Performance varies significantly across categories. Structured objects (screw, wood) are easier than complex textures (carpet, leather).
 
 5. **Cross-dataset transfer is promising**: Models trained on MVTec can detect defects in Kolektor with reasonable accuracy (up to 0.69 AUC), suggesting learned features are somewhat generalizable.
 
