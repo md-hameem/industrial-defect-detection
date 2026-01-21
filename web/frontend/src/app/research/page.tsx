@@ -47,7 +47,10 @@ const figures = [
   { src: "/figures/model_comparison_bar.png", title: "Performance by Category", desc: "Grouped bar chart comparing all three autoencoder models" },
   { src: "/figures/model_heatmap.png", title: "AUC Heatmap", desc: "Performance heatmap across all categories and models" },
   { src: "/figures/model_mean_comparison.png", title: "Average Performance", desc: "Mean AUC scores for CAE, VAE, and DAE models" },
-  { src: "/figures/thesis_fig3_generalization.png", title: "Cross-Dataset Generalization", desc: "MVTec to Kolektor transfer learning heatmap" },
+  { src: "/figures/thesis_fig3_generalization.png", title: "Cross-Dataset Generalization", desc: "MVTec to Kolektor transfer learning results" },
+  { src: "/figures/cross_dataset_heatmap.png", title: "Generalization Heatmap", desc: "Transfer learning AUC scores across source categories" },
+  { src: "/figures/cross_dataset_bar.png", title: "Transfer Performance", desc: "Bar chart of cross-dataset evaluation results" },
+  { src: "/figures/cross_dataset_roc.png", title: "Cross-Dataset ROC", desc: "ROC curves for models tested on KolektorSDD2" },
   { src: "/figures/thesis_fig4_reconstructions.png", title: "Reconstruction Examples", desc: "Original, reconstruction, error map, and ground truth" },
 ];
 
