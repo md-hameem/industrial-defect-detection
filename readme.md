@@ -5,7 +5,7 @@
 [![Next.js](https://img.shields.io/badge/Next.js-15-black.svg)](https://nextjs.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-teal.svg)](https://fastapi.tiangolo.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Changelog](https://img.shields.io/badge/Changelog-v2.0.0-green.svg)](CHANGELOG.md)
+[![Changelog](https://img.shields.io/badge/Changelog-v2.1.0-green.svg)](CHANGELOG.md)
 
 **Bachelor's Graduation Thesis** - Research on Industrial Defect Detection Methods Based on Deep Learning
 
@@ -21,7 +21,7 @@ A full-stack web application for interactive defect detection:
 - 🔍 **Real-time Detection** - Upload images and get instant AI analysis
 - 🧠 **4 AI Models** - CAE, VAE, DAE (anomaly detection) + CNN (classification)
 - 🌡️ **Visual Heatmaps** - See exactly where defects are located
-- 📊 **Class Probabilities** - CNN classifier with bar chart visualization
+- 📊 **Compare All Models** - Side-by-side CAE vs VAE vs DAE comparison
 - 🌓 **Dark/Light Mode** - Full theme support
 - 📜 **History Tracking** - Keep track of all predictions
 
@@ -43,13 +43,13 @@ Open http://localhost:3000
 
 ## 📊 Results Summary
 
-| Model | Dataset | Metric | Score |
-|-------|---------|--------|-------|
-| **CAE** | MVTec AD (15 categories) | Mean ROC-AUC | 0.617 |
-| **Denoising AE** | MVTec AD (15 categories) | Mean ROC-AUC | 0.621 |
-| **VAE** | MVTec AD (15 categories) | Mean ROC-AUC | 0.534 |
-| **CNN Classifier** | NEU Surface Defect | Accuracy | **99%** |
-| **CAE (Grid)** | Cross-dataset (Kolektor) | ROC-AUC | 0.690 |
+| Model | Dataset | Image AUC | AP | F1 | Pixel AUC |
+|-------|---------|-----------|-----|-----|-----------|
+| **CAE** | MVTec AD (15 categories) | 0.580 | 0.796 | 0.849 | 0.618 |
+| **DAE** | MVTec AD (15 categories) | 0.596 | 0.813 | 0.854 | 0.595 |
+| **VAE** | MVTec AD (15 categories) | 0.412 | 0.706 | 0.822 | 0.524 |
+| **CNN Classifier** | NEU Surface Defect | - | - | **99%** | - |
+| **CAE (Grid)** | Cross-dataset (Kolektor) | 0.690 | - | - | - |
 
 ## 📸 Sample Results
 

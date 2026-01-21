@@ -4,6 +4,38 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [2.1.0] - 2026-01-21
+
+### Added
+- **Comprehensive Evaluation Metrics Module** (`src/evaluation/metrics.py`)
+  - Image-level: ROC-AUC, Average Precision, Precision, Recall, F1
+  - Pixel-level: IoU, Dice, Pixel AUC, PRO score
+  - `find_optimal_threshold()` with F1/Youden optimization
+  - `evaluate_model()` for full dataset evaluation
+  - `print_metrics()` for pretty output
+- **Evaluation Notebook** (`notebooks/08_comprehensive_evaluation.ipynb`)
+  - Bar charts, heatmaps, radar charts
+  - Pixel-level metric visualizations
+  - Model comparison summaries
+- **Side-by-Side Model Comparison** in Detection Page
+  - Compare CAE vs VAE vs DAE heatmaps simultaneously
+  - Grouped by uploaded image with expandable details
+- **Comprehensive Evaluation Section** in Research Page
+  - Image-level and pixel-level metrics cards
+  - Best/worst categories per model
+- **10 Research Figures** including cross-dataset visualizations
+
+### Changed
+- Updated VAE results in Research Page with v2 training data
+- Updated Cross-Dataset Evaluation with all VAE results
+- Model Architecture Comparison cards updated with correct metrics
+
+### Fixed
+- **VAE Numerical Stability** - Added `logvar` clamping in `reparameterize()`
+- **VAE Training** - Added gradient clipping to prevent exploding gradients
+- Added `get_anomaly_score()` method to CAE and DAE models (was missing)
+- Fixed `expandedResult` state type to support both number and string keys
+
 ## [2.0.0] - 2026-01-19
 
 ### Added
