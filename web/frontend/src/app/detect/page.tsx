@@ -13,13 +13,13 @@ import {
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 const CATEGORIES = ["bottle", "cable", "capsule", "carpet", "grid", "hazelnut", "leather", "metal_nut", "pill", "screw", "tile", "toothbrush", "transistor", "wood", "zipper"];
-const AUTOENCODER_TYPES = ["CAE", "VAE", "DAE"];
+const AUTOENCODER_TYPES = ["CAE", "VAE", "DAE", "SKIP_CAE", "PATCHCORE"];
 const NEU_CLASSES = ["Crazing", "Inclusion", "Patches", "Pitted", "Rolled", "Scratches"];
 
 interface AutoencoderResult {
   success: boolean;
   model: string;
-  model_type: "autoencoder";
+  model_type: "autoencoder" | "anomaly_detector";
   category: string;
   anomaly_score: number;
   original_image: string;
@@ -77,7 +77,7 @@ export default function DetectPage() {
     formData.append("file", file);
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s timeout (longer for PatchCore)
       const response = await fetch(`${API_URL}/predict?model_type=${modelType}&category=${selectedCategory}`, { 
         method: "POST", 
         body: formData,
@@ -101,6 +101,35 @@ export default function DetectPage() {
     }
   };
 
+  const analyzeBatch = async (file: File, modelTypes: string[]): Promise<PredictionResult[]> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 120000);
+      const response = await fetch(
+        `${API_URL}/predict/batch?model_types=${modelTypes.join(",")}&category=${selectedCategory}`,
+        { method: "POST", body: formData, signal: controller.signal }
+      );
+      clearTimeout(timeoutId);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || `Server error: ${response.status}`);
+      }
+      const data = await response.json();
+      return (data.results || []).filter((r: any) => r.success !== false);
+    } catch (err) {
+      if (err instanceof Error) {
+        if (err.name === 'AbortError') {
+          setError('Batch request timed out.');
+        } else if (err.message.includes('Failed to fetch')) {
+          setError('Cannot connect to server.');
+        }
+      }
+      return [];
+    }
+  };
+
   const handleAnalyze = async () => {
     if (uploadedImages.length === 0) return;
     setLoading(true); setError(null); setResults([]);
@@ -118,11 +147,24 @@ export default function DetectPage() {
     setBatchProgress({ current: 0, total });
     const allResults: PredictionResult[] = [];
     
-    for (const { file } of uploadedImages) {
-      for (const modelType of modelsToRun) {
-        const result = await analyzeImage(file, modelType);
-        if (result) { allResults.push(result); saveToHistory(result, file.name); }
+    if (compareMode && modelsToRun.length > 1) {
+      // Use batch endpoint for faster comparison
+      for (const { file } of uploadedImages) {
+        const batchResults = await analyzeBatch(file, modelsToRun);
+        for (const result of batchResults) {
+          allResults.push(result);
+          saveToHistory(result, file.name);
+        }
         setBatchProgress({ current: allResults.length, total });
+      }
+    } else {
+      // Single model — use standard endpoint
+      for (const { file } of uploadedImages) {
+        for (const modelType of modelsToRun) {
+          const result = await analyzeImage(file, modelType);
+          if (result) { allResults.push(result); saveToHistory(result, file.name); }
+          setBatchProgress({ current: allResults.length, total });
+        }
       }
     }
     
@@ -155,7 +197,7 @@ export default function DetectPage() {
   const getScoreBg = (s: number) => s < 0.3 ? "from-emerald-500/20 to-emerald-500/5" : s < 0.6 ? "from-amber-500/20 to-amber-500/5" : "from-rose-500/20 to-rose-500/5";
   const getScoreIcon = (s: number) => s < 0.3 ? CheckCircle : s < 0.6 ? AlertTriangle : AlertCircle;
 
-  const autoencoderResults = results.filter((r): r is AutoencoderResult => r.model_type === "autoencoder");
+  const autoencoderResults = results.filter((r): r is AutoencoderResult => r.model_type === "autoencoder" || r.model_type === "anomaly_detector");
   const classifierResults = results.filter((r): r is ClassifierResult => r.model_type === "classifier");
 
   // Group autoencoder results by image index for comparison view
@@ -223,9 +265,9 @@ export default function DetectPage() {
                 onClick={() => setUseCNN(false)}
                 className={`p-4 rounded-xl text-left transition-all ${!useCNN ? "bg-gradient-to-r from-blue-500/20 to-purple-500/20 border-2 border-blue-500/50" : `${darkMode ? "bg-slate-700/30" : "bg-slate-100"} border-2 border-transparent hover:border-blue-200`}`}
               >
-                <div className={`font-bold mb-1 ${textPrimary}`}>Autoencoders</div>
-                <div className={`text-xs ${textSecondary}`}>CAE, VAE, DAE</div>
-                <div className={`text-xs ${textMuted} mt-2`}>Anomaly detection with heatmaps</div>
+                <div className={`font-bold mb-1 ${textPrimary}`}>Anomaly Detection</div>
+                <div className={`text-xs ${textSecondary}`}>CAE, VAE, DAE + 2 New</div>
+                <div className={`text-xs ${textMuted} mt-2`}>Heatmaps + PatchCore SOTA</div>
               </button>
               <button
                 onClick={() => { setUseCNN(true); setCompareMode(false); }}
@@ -249,8 +291,8 @@ export default function DetectPage() {
                 {/* Autoencoder Model Selection */}
                 <div className="mb-4">
                   <label className={`block text-sm mb-2 ${textSecondary}`}>Model</label>
-                  <div className="grid grid-cols-3 gap-2">
-                    {AUTOENCODER_TYPES.map((model) => (
+                  <div className="grid grid-cols-3 gap-2 mb-2">
+                    {["CAE", "VAE", "DAE"].map((model) => (
                       <button
                         key={model}
                         onClick={() => { setSelectedModel(model); setCompareMode(false); }}
@@ -261,6 +303,24 @@ export default function DetectPage() {
                         <div className="text-xs opacity-70">{model === "CAE" ? "Standard" : model === "VAE" ? "Probabilistic" : "Denoising"}</div>
                       </button>
                     ))}
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => { setSelectedModel("SKIP_CAE"); setCompareMode(false); }}
+                      disabled={compareMode}
+                      className={`p-3 rounded-xl text-center transition-all ${!compareMode && selectedModel === "SKIP_CAE" ? "bg-gradient-to-r from-teal-500 to-cyan-600 text-white" : compareMode ? `${darkMode ? "bg-slate-700/30 text-slate-500" : "bg-slate-200 text-slate-400"} cursor-not-allowed` : `${darkMode ? "bg-slate-700/50 text-slate-300 hover:bg-slate-700" : "bg-slate-100 text-slate-700 hover:bg-slate-200"}`}`}
+                    >
+                      <div className="font-bold">Skip-CAE</div>
+                      <div className="text-xs opacity-70">U-Net Style</div>
+                    </button>
+                    <button
+                      onClick={() => { setSelectedModel("PATCHCORE"); setCompareMode(false); }}
+                      disabled={compareMode}
+                      className={`p-3 rounded-xl text-center transition-all ${!compareMode && selectedModel === "PATCHCORE" ? "bg-gradient-to-r from-rose-500 to-pink-600 text-white" : compareMode ? `${darkMode ? "bg-slate-700/30 text-slate-500" : "bg-slate-200 text-slate-400"} cursor-not-allowed` : `${darkMode ? "bg-slate-700/50 text-slate-300 hover:bg-slate-700" : "bg-slate-100 text-slate-700 hover:bg-slate-200"}`}`}
+                    >
+                      <div className="font-bold flex items-center gap-1 justify-center">PatchCore <span className="text-[10px] px-1 py-0.5 bg-white/20 rounded">SOTA</span></div>
+                      <div className="text-xs opacity-70">Feature-Based</div>
+                    </button>
                   </div>
                 </div>
 
@@ -280,9 +340,9 @@ export default function DetectPage() {
                   <input type="checkbox" checked={compareMode} onChange={(e) => setCompareMode(e.target.checked)} className="w-5 h-5 accent-blue-500" />
                   <div className="flex-1">
                     <span className={`font-semibold flex items-center gap-2 ${textPrimary}`}><RefreshCw className={`w-4 h-4 ${compareMode ? "text-blue-400" : ""}`} /> Compare All</span>
-                    <span className={`block text-sm ${textSecondary}`}>Run CAE, VAE, DAE together</span>
+                    <span className={`block text-sm ${textSecondary}`}>Run all 5 models together</span>
                   </div>
-                  {compareMode && <span className="text-xs bg-blue-500/30 text-blue-300 px-2 py-1 rounded">3x</span>}
+                  {compareMode && <span className="text-xs bg-blue-500/30 text-blue-300 px-2 py-1 rounded">5×</span>}
                 </label>
               </>
             ) : (

@@ -210,18 +210,20 @@ export default function HomePage() {
             <p className={`text-lg ${textSecondary}`}>Three specialized architectures for different use cases</p>
           </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-3 lg:grid-cols-5 gap-6">
             {[
-              { name: "CAE", full: "Convolutional Autoencoder", score: "0.62 AUC", color: "from-blue-500 to-cyan-500", desc: "Simple, stable, and effective baseline architecture" },
-              { name: "VAE", full: "Variational Autoencoder", score: "0.53 AUC", color: "from-purple-500 to-pink-500", desc: "Probabilistic encoding with latent space sampling" },
-              { name: "DAE", full: "Denoising Autoencoder", score: "0.62 AUC", color: "from-orange-500 to-red-500", desc: "Robust feature learning through noise injection" },
+              { name: "CAE", full: "Convolutional Autoencoder", score: "0.62 AUC", color: "from-blue-500 to-cyan-500", desc: "Simple, stable baseline" },
+              { name: "VAE", full: "Variational Autoencoder", score: "0.53 AUC", color: "from-purple-500 to-pink-500", desc: "Probabilistic encoding" },
+              { name: "DAE", full: "Denoising Autoencoder", score: "0.62 AUC", color: "from-orange-500 to-red-500", desc: "Noise-robust features" },
+              { name: "Skip-CAE", full: "U-Net Style AE", score: "Better Maps", color: "from-teal-500 to-cyan-500", desc: "Skip connections preserve detail" },
+              { name: "PatchCore", full: "Feature-Based (SOTA)", score: "0.85+ AUC", color: "from-rose-500 to-pink-600", desc: "Pretrained features, no training" },
             ].map((model, i) => (
-              <motion.div key={i} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }} whileHover={{ scale: 1.03 }} className={`p-8 rounded-3xl border text-center relative overflow-hidden group ${cardBg}`}>
+              <motion.div key={i} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }} whileHover={{ scale: 1.03 }} className={`p-6 rounded-3xl border text-center relative overflow-hidden group ${cardBg}`}>
                 <div className={`absolute inset-0 bg-gradient-to-br ${model.color} opacity-0 group-hover:opacity-10 transition-opacity`} />
-                <div className={`inline-block px-6 py-3 rounded-xl bg-gradient-to-r ${model.color} text-white font-black text-3xl mb-4`}>{model.name}</div>
-                <h3 className={`text-lg font-semibold mb-2 ${textPrimary}`}>{model.full}</h3>
-                <p className={`text-sm mb-4 ${textSecondary}`}>{model.desc}</p>
-                <div className={`text-2xl font-bold ${textPrimary}`}>{model.score}</div>
+                <div className={`inline-block px-4 py-2 rounded-xl bg-gradient-to-r ${model.color} text-white font-black text-xl mb-3`}>{model.name}</div>
+                <h3 className={`text-sm font-semibold mb-1 ${textPrimary}`}>{model.full}</h3>
+                <p className={`text-xs mb-3 ${textSecondary}`}>{model.desc}</p>
+                <div className={`text-xl font-bold ${textPrimary}`}>{model.score}</div>
               </motion.div>
             ))}
           </div>

@@ -4,6 +4,49 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [3.0.0] - 2026-04-05
+
+### Added
+- **Skip-Connection CAE (U-Net Style)** (`src/models/skip_cae.py`)
+  - Encoder-to-decoder skip connections preserve spatial detail
+  - Produces sharper anomaly maps than vanilla CAE
+  - New `SkipConvAutoencoder` class with bottleneck + skip architecture
+- **PatchCore Feature-Based Detection** (`src/models/patchcore.py`)
+  - SOTA anomaly detection using frozen pretrained ResNet-18 features
+  - Memory bank of normal patch features with nearest-neighbor scoring
+  - No training required — only feature extraction on normal data
+  - Expected 0.85+ AUC on MVTec AD (vs 0.62 for CAE)
+  - Pixel-precise anomaly maps via feature distance upsampling
+- **SSIM-Based Anomaly Scoring** in CAE
+  - `get_anomaly_map_ssim()` captures structural anomalies
+  - `get_anomaly_map_combined()` fuses MSE + SSIM for robust detection
+- **Batch Inference API** (`/predict/batch` endpoint)
+  - Process one image with multiple models in a single request
+  - 3-5x faster than sequential calls for comparison mode
+- **44 Unit Tests** (`tests/test_models.py`, `tests/test_metrics.py`)
+  - Full coverage for all 6 model architectures
+  - Metric correctness tests with known inputs/outputs
+- **Enhanced Data Augmentation** (`src/data/transforms.py`)
+  - New `augment_level='strong'` option with ColorJitter, GaussianBlur, RandomAffine
+  - Stronger regularization for small normal-only training sets
+- **`/model-types` API endpoint** listing all supported model types
+
+### Changed
+- **Heatmap Quality** — Gaussian smoothing (sigma=4.0) + per-image normalization
+  - Cleaner, more interpretable anomaly maps
+  - Higher resolution output (512px vs 300px)
+- **Auto Device Detection** — `DEVICE` auto-detects CUDA instead of hardcoded CPU
+- **Frontend Model Selector** — 5 anomaly detection models + CNN classifier
+- **Compare Mode** — Uses batch API, supports all 5 models simultaneously
+- **Homepage** — Updated model cards to show all 6 models including PatchCore SOTA
+- **README** — Updated to v3.0.0 with new model table and feature list
+
+### Fixed
+- **Security** — `SECRET_KEY` loaded from `IDD_SECRET_KEY` environment variable
+- **PyTorch 2.4+ Deprecation** — `weights_only=True` in all `torch.load()` calls
+- **Input Validation** — Images capped at 4 megapixels to prevent OOM crashes
+- **API Response Type** — `model_type` field now includes `"anomaly_detector"` for non-AE models
+
 ## [2.2.0] - 2026-01-21
 
 ### Added

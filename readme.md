@@ -5,7 +5,7 @@
 [![Next.js](https://img.shields.io/badge/Next.js-15-black.svg)](https://nextjs.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-teal.svg)](https://fastapi.tiangolo.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Changelog](https://img.shields.io/badge/Changelog-v2.2.0-green.svg)](CHANGELOG.md)
+[![Changelog](https://img.shields.io/badge/Changelog-v3.0.0-green.svg)](CHANGELOG.md)
 [![Thesis](https://img.shields.io/badge/Thesis-Read_Final_Draft-purple.svg)](docs/thesis_paper.md)
 
 **Bachelor's Graduation Thesis** - Research on Industrial Defect Detection Methods Based on Deep Learning
@@ -20,9 +20,9 @@ A full-stack web application for interactive defect detection:
 
 ### Features
 - 🔍 **Real-time Detection** - Upload images and get instant AI analysis
-- 🧠 **4 AI Models** - CAE, VAE, DAE (anomaly detection) + CNN (classification)
-- 🌡️ **Visual Heatmaps** - See exactly where defects are located
-- 📊 **Compare All Models** - Side-by-side CAE vs VAE vs DAE comparison
+- 🧠 **6 AI Models** - CAE, VAE, DAE, Skip-CAE, PatchCore (SOTA), CNN
+- 🌡️ **Visual Heatmaps** - Gaussian-smoothed anomaly maps + SSIM scoring
+- 📊 **Compare All Models** - Side-by-side 5-model comparison with batch API
 - 🌓 **Dark/Light Mode** - Full theme support
 - 📜 **History Tracking** - Keep track of all predictions
 
@@ -79,11 +79,13 @@ This project implements **unsupervised anomaly detection** using autoencoder-bas
 
 - 🔍 **Unsupervised Learning** - Train on normal samples only
 - 🏭 **3 Industrial Datasets** - MVTec AD, KolektorSDD2, NEU Surface Defect
-- 🧠 **4 Models** - CAE, VAE, Denoising AE, CNN Classifier
-- 🌐 **Full-Stack Web App** - Next.js + FastAPI
+- 🧠 **6 Models** - CAE, VAE, Denoising AE, Skip-CAE (U-Net), PatchCore (SOTA), CNN Classifier
+- 🌐 **Full-Stack Web App** - Next.js + FastAPI with batch inference API
 - 📊 **84 Visualizations** - Heatmaps, ROC curves, reconstructions
-- 💻 **CPU Optimized** - Designed for training without GPU
+- 💻 **CPU Optimized** - Designed for training without GPU (auto-detects CUDA)
 - 🔬 **Cross-Dataset Testing** - Generalization evaluation
+- 🧪 **44 Unit Tests** - Comprehensive model and metric test coverage
+- 🔒 **Security** - Env-based secrets, input validation, secure model loading
 
 ## 📁 Project Structure
 
@@ -160,6 +162,8 @@ cd web/frontend && npm run dev
 | **CAE** | Convolutional Autoencoder | Simple, effective baseline | 0.92 (Hazelnut) |
 | **VAE** | Variational Autoencoder | Probabilistic latent space | 0.53 (mean) |
 | **Denoising AE** | Noise injection | Robust feature learning | 0.83 (Grid) |
+| **Skip-CAE** | U-Net style skip connections | Sharper anomaly maps | — |
+| **PatchCore** | Pretrained feature matching | SOTA, no training needed | 0.85+ |
 | **CNN** | Classifier (Supervised) | 6-class classification | 99% acc |
 
 ## 📈 Key Findings
