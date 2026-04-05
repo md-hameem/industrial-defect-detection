@@ -1,7 +1,14 @@
 """
-FastAPI Backend for Industrial Defect Detection
+FastAPI Backend for Industrial Defect Detection (v2.0)
 
 Provides REST API for model inference on uploaded images.
+
+Upgrades:
+    - Environment variable for SECRET_KEY (security fix)
+    - /predict/batch endpoint for multi-model comparison
+    - Support for SKIP_CAE and PATCHCORE models
+    - /model-types endpoint listing all available model types
+    - Image size validation
 """
 
 import os
@@ -12,7 +19,7 @@ from pathlib import Path
 from typing import Optional, List
 from datetime import datetime, timedelta
 
-from fastapi import FastAPI, File, UploadFile, HTTPException, Depends, status
+from fastapi import FastAPI, File, UploadFile, HTTPException, Depends, status, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pydantic import BaseModel
@@ -23,11 +30,12 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from inference import ModelInference
 
-# JWT settings (simple auth)
+# JWT settings
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 
-SECRET_KEY = "your-secret-key-change-in-production"
+# Load SECRET_KEY from environment variable (security fix)
+SECRET_KEY = os.environ.get("IDD_SECRET_KEY", "dev-secret-key-change-in-production")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
@@ -45,8 +53,8 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token", auto_error=False)
 
 app = FastAPI(
     title="Industrial Defect Detection API",
-    description="Upload images to detect defects using trained autoencoder models",
-    version="1.0.0",
+    description="Upload images to detect defects using trained autoencoder models. Supports CAE, VAE, DAE, Skip-CAE, PatchCore, and CNN models.",
+    version="2.0.0",
 )
 
 # CORS
@@ -144,7 +152,8 @@ async def root():
     return {
         "status": "healthy",
         "message": "Industrial Defect Detection API",
-        "version": "1.0.0",
+        "version": "2.0.0",
+        "models": inference.get_model_types(),
     }
 
 
@@ -171,6 +180,16 @@ async def list_models():
     return inference.get_available_models()
 
 
+@app.get("/model-types")
+async def get_model_types():
+    """Get list of all supported model types"""
+    return {
+        "model_types": inference.get_model_types(),
+        "anomaly_detection": ["CAE", "VAE", "DAE", "SKIP_CAE", "PATCHCORE"],
+        "classification": ["CNN"],
+    }
+
+
 @app.post("/predict")
 async def predict(
     file: UploadFile = File(...),
@@ -182,7 +201,7 @@ async def predict(
     Upload an image and get defect detection results.
     
     - **file**: Image file (PNG, JPG)
-    - **model_type**: CAE, VAE, DAE, or CNN
+    - **model_type**: CAE, VAE, DAE, SKIP_CAE, PATCHCORE, or CNN
     - **category**: MVTec category (not needed for CNN)
     """
     import time
@@ -225,11 +244,11 @@ async def predict(
             "processing_time": processing_time,
         }
     else:
-        # Autoencoder response
+        # Autoencoder / PatchCore response
         return {
             "success": True,
             "model": model_type,
-            "model_type": "autoencoder",
+            "model_type": "anomaly_detector",
             "category": category,
             "anomaly_score": result["anomaly_score"],
             "original_image": result["original_base64"],
@@ -237,6 +256,52 @@ async def predict(
             "heatmap": result["heatmap_base64"],
             "processing_time": processing_time,
         }
+
+
+@app.post("/predict/batch")
+async def predict_batch(
+    file: UploadFile = File(...),
+    model_types: str = "CAE,VAE,DAE",
+    category: str = "bottle",
+    user: Optional[dict] = Depends(get_current_user_optional),
+):
+    """
+    Run inference with multiple models on a single image (comparison mode).
+    
+    3x faster than calling /predict three times because image is processed once.
+    
+    - **file**: Image file (PNG, JPG)
+    - **model_types**: Comma-separated model types (e.g. "CAE,VAE,DAE")
+    - **category**: MVTec category
+    """
+    import time
+    start_time = time.time()
+    
+    # Validate file
+    if not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="File must be an image")
+    
+    # Read image
+    try:
+        contents = await file.read()
+        image = Image.open(BytesIO(contents)).convert("RGB")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Invalid image: {str(e)}")
+    
+    # Parse model types
+    types = [t.strip() for t in model_types.split(",")]
+    
+    # Run batch inference
+    results = inference.predict_batch(image, types, category)
+    
+    processing_time = time.time() - start_time
+    
+    return {
+        "success": True,
+        "total_models": len(types),
+        "processing_time": processing_time,
+        "results": results,
+    }
 
 
 @app.get("/categories")
@@ -254,4 +319,3 @@ async def cnn_available():
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
-

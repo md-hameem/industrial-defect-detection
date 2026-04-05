@@ -66,8 +66,10 @@ NEU_CATEGORIES = [
 # Training Hyperparameters
 # =============================================================================
 
-# Device settings (CPU only due to AMD GPU limitation)
-DEVICE = "cpu"
+import torch
+
+# Device settings (auto-detect GPU; falls back to CPU for AMD GPU / no CUDA)
+DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
 # Training parameters
 BATCH_SIZE = 16

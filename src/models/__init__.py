@@ -4,6 +4,8 @@ from .cae import ConvAutoencoder, create_cae
 from .vae import VariationalAutoencoder, create_vae
 from .denoising_ae import DenoisingAutoencoder, create_denoising_ae
 from .cnn_classifier import LightweightCNN, create_cnn_classifier
+from .skip_cae import SkipConvAutoencoder, create_skip_cae
+from .patchcore import PatchCoreModel, create_patchcore
 
 __all__ = [
     'ConvAutoencoder',
@@ -14,4 +16,8 @@ __all__ = [
     'create_denoising_ae',
     'LightweightCNN',
     'create_cnn_classifier',
+    'SkipConvAutoencoder',
+    'create_skip_cae',
+    'PatchCoreModel',
+    'create_patchcore',
 ]

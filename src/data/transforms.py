@@ -9,13 +9,14 @@ from torchvision import transforms
 from src.config import IMAGE_SIZE, NORMALIZE_MEAN, NORMALIZE_STD
 
 
-def get_transforms(train: bool = True, normalize: bool = True):
+def get_transforms(train: bool = True, normalize: bool = True, augment_level: str = 'standard'):
     """
     Get image transforms for training or evaluation.
     
     Args:
         train: If True, includes data augmentation transforms
         normalize: If True, applies ImageNet normalization
+        augment_level: 'none', 'standard', or 'strong' augmentation level
         
     Returns:
         torchvision.transforms.Compose: Composed transforms
@@ -26,12 +27,28 @@ def get_transforms(train: bool = True, normalize: bool = True):
     transform_list.append(transforms.Resize((IMAGE_SIZE, IMAGE_SIZE)))
     
     # Data augmentation for training
-    if train:
+    if train and augment_level != 'none':
         transform_list.extend([
             transforms.RandomHorizontalFlip(p=0.5),
             transforms.RandomVerticalFlip(p=0.5),
             transforms.RandomRotation(degrees=10),
         ])
+        
+        if augment_level == 'strong':
+            transform_list.extend([
+                transforms.ColorJitter(
+                    brightness=0.2,
+                    contrast=0.2,
+                    saturation=0.1,
+                    hue=0.02,
+                ),
+                transforms.RandomAffine(
+                    degrees=0,
+                    translate=(0.05, 0.05),
+                    scale=(0.95, 1.05),
+                ),
+                transforms.GaussianBlur(kernel_size=3, sigma=(0.1, 1.0)),
+            ])
     
     # Convert to tensor
     transform_list.append(transforms.ToTensor())
