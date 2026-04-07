@@ -95,6 +95,8 @@ export default function DetectPage() {
           setError('Request timed out. The server may be overloaded.');
         } else if (err.message.includes('Failed to fetch')) {
           setError('Cannot connect to server. Please ensure the backend is running on port 8000.');
+        } else {
+          setError(err.message);
         }
       }
       return null;
@@ -183,10 +185,10 @@ export default function DetectPage() {
   const downloadAllResults = () => {
     results.forEach((result, i) => {
       setTimeout(() => {
-        if (result.model_type === "autoencoder") {
-          downloadImage(result.heatmap, `heatmap_${result.model}_${result.category}_${i+1}.png`);
-        } else {
+        if (result.model_type === "classifier") {
           downloadImage(result.chart_image, `chart_CNN_${i+1}.png`);
+        } else {
+          downloadImage(result.heatmap, `heatmap_${result.model}_${result.category}_${i+1}.png`);
         }
       }, i * 100);
     });
