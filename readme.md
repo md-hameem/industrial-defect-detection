@@ -5,7 +5,7 @@
 [![Next.js](https://img.shields.io/badge/Next.js-15-black.svg)](https://nextjs.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-teal.svg)](https://fastapi.tiangolo.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Changelog](https://img.shields.io/badge/Changelog-v3.0.0-green.svg)](CHANGELOG.md)
+[![Changelog](https://img.shields.io/badge/Changelog-v4.0.0-green.svg)](CHANGELOG.md)
 [![Thesis](https://img.shields.io/badge/Thesis-Read_Final_Draft-purple.svg)](docs/thesis_paper.md)
 
 **Bachelor's Graduation Thesis** - Research on Industrial Defect Detection Methods Based on Deep Learning
@@ -46,8 +46,10 @@ Open http://localhost:3000
 
 | Model | Dataset | Image AUC | AP | F1 | Pixel AUC |
 |-------|---------|-----------|-----|-----|-----------|
-| **CAE** | MVTec AD (15 categories) | 0.580 | 0.796 | 0.849 | 0.618 |
-| **DAE** | MVTec AD (15 categories) | 0.596 | 0.813 | 0.854 | 0.595 |
+| **PatchCore** | MVTec AD (15 categories) | **0.632** | 0.810 | 0.850 | - |
+| **DAE** | MVTec AD (15 categories) | 0.596 | **0.813** | **0.854** | 0.595 |
+| **Skip-CAE** | MVTec AD (15 categories) | 0.594 | 0.799 | 0.851 | - |
+| **CAE** | MVTec AD (15 categories) | 0.580 | 0.796 | 0.849 | **0.618** |
 | **VAE** | MVTec AD (15 categories) | 0.412 | 0.706 | 0.822 | 0.524 |
 | **CNN Classifier** | NEU Surface Defect | - | - | **99%** | - |
 | **CAE (Grid)** | Cross-dataset (Kolektor) | 0.690 | - | - | - |
@@ -159,11 +161,11 @@ cd web/frontend && npm run dev
 
 | Model | Type | Key Feature | Best AUC |
 |-------|------|-------------|----------|
-| **CAE** | Convolutional Autoencoder | Simple, effective baseline | 0.92 (Hazelnut) |
-| **VAE** | Variational Autoencoder | Probabilistic latent space | 0.53 (mean) |
-| **Denoising AE** | Noise injection | Robust feature learning | 0.83 (Grid) |
-| **Skip-CAE** | U-Net style skip connections | Sharper anomaly maps | — |
-| **PatchCore** | Pretrained feature matching | SOTA, no training needed | 0.85+ |
+| **PatchCore** | Pretrained feature matching | SOTA, no training needed | 0.93 (Hazelnut) |
+| **Skip-CAE** | U-Net style skip connections | Sharper anomaly maps | 0.96 (Wood) |
+| **Denoising AE** | Noise injection | Robust feature learning | 0.99 (Screw) |
+| **CAE** | Convolutional Autoencoder | Simple, effective baseline | 0.98 (Screw) |
+| **VAE** | Variational Autoencoder | Probabilistic latent space | 0.80 (Wood) |
 | **CNN** | Classifier (Supervised) | 6-class classification | 99% acc |
 
 ## 📈 Key Findings
@@ -176,11 +178,16 @@ cd web/frontend && npm run dev
 
 ## 💻 Hardware Requirements
 
-Designed for **CPU-only training**:
-- Python 3.12
-- 16GB RAM recommended
+Designed for both **Local Testing** and **Cloud GPU Training**:
+
+**Local Development:**
+- Python 3.12, 16GB RAM recommended
 - ~10GB disk for datasets
-- Training time: ~7-12 min per category
+
+**Scalable Training (Kaggle Integration):**
+- Refer to `11_train_skip_cae_kaggle.ipynb` & `12_train_patchcore_kaggle.ipynb`
+- Leverages Kaggle Tesla T4 / P100 GPUs for OOM-free deep learning
+- Fast inference directly feeds outputs into local `/models` web backend
 
 ## 👥 Authors
 

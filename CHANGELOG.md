@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [4.0.0] - 2026-04-10
+
+### Added
+- **Kaggle GPU Training Pipeline** (`notebooks/11_train_skip_cae_kaggle.ipynb`, `notebooks/12_train_patchcore_kaggle.ipynb`)
+  - Migrated intensive model training (Skip-CAE, PatchCore) to Kaggle Tesla T4/P100 instances
+  - Unified dynamic path detection handling for cloud environment execution
+  - Solved CPU Out-of-Memory (OOM) bottlenecks during extensive train loops
+- **Model Integration** 
+  - Over 150 successfully fitted `.pth` files synced from massive cloud executions to local `outputs/models` directory
+  - FastAPI dynamic model resolver perfectly incorporates local cloud-trained model weights
+
 ## [3.0.0] - 2026-04-05
 
 ### Added

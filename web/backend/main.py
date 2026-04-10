@@ -208,7 +208,7 @@ async def predict(
     start_time = time.time()
     
     # Validate file
-    if not file.content_type.startswith("image/"):
+    if file.content_type is not None and not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="File must be an image")
     
     # Read image
@@ -278,7 +278,7 @@ async def predict_batch(
     start_time = time.time()
     
     # Validate file
-    if not file.content_type.startswith("image/"):
+    if file.content_type is not None and not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="File must be an image")
     
     # Read image

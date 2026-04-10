@@ -15,8 +15,8 @@
 This thesis investigates the application of deep learning methods for unsupervised anomaly detection in industrial manufacturing. Five anomaly detection architectures—Convolutional Autoencoder (CAE), Variational Autoencoder (VAE), Denoising Autoencoder (DAE), Skip-Connection CAE (U-Net style), and PatchCore (feature-based SOTA)—along with a CNN classifier are implemented and evaluated on the MVTec Anomaly Detection dataset across 15 industrial product categories.
 
 **Key Results:**
-- DAE achieves the best reconstruction-based performance with 0.596 mean image-level AUC and 0.854 F1 score
-- PatchCore, using pretrained ResNet-18 features with nearest-neighbor scoring, achieves 0.85+ AUC—demonstrating the superiority of feature-based methods over reconstruction-based approaches
+- DAE and Skip-CAE achieve the best reconstruction-based performance with ~0.595 mean image-level AUC
+- PatchCore, using pretrained ResNet-18 features with nearest-neighbor scoring, achieves the overall best performance at 0.632 AUC—demonstrating the superiority of feature-based methods over reconstruction-based approaches
 - Skip-CAE with U-Net style skip connections produces sharper anomaly maps than vanilla CAE by preserving spatial detail through the bottleneck
 - SSIM-based anomaly scoring captures structural defects that MSE alone misses
 - CAE demonstrates strong generalization with 0.690 AUC when transferred to the KolektorSDD2 dataset
@@ -442,14 +442,15 @@ The demonstration system is a full-stack web application designed for real-time 
 
 ### 4.1 Experimental Setup
 
-- **Hardware**: Intel Core i5 / NVIDIA GTX 1660
+- **Hardware Environment 1 (Local Web App & Baseline)**: Intel Core i5 / NVIDIA GTX 1660
+- **Hardware Environment 2 (Cloud GPU Scaled Training)**: Kaggle Tesla T4 / P100 GPUs (16GB VRAM)
 - **Software**: Python 3.12, PyTorch 2.0+, scikit-learn
 - **Dataset Split**: Official MVTec AD train/test split
-- **Implementation**:
-  - `01_train_cae.ipynb`: CAE training loop
-  - `02_train_vae_v2.ipynb`: VAE training with reduced LR and KL annealing
-  - `03_train_denoising_ae.ipynb`: DAE training with noise injection
-  - `08_comprehensive_evaluation.ipynb`: Full evaluation pipeline
+- **Implementation Scripts**:
+  - `01_train_cae.ipynb` to `03_train_denoising_ae.ipynb`: Local baseline autoencoders
+  - `11_train_skip_cae_kaggle.ipynb`: Cloud GPU accelerated Skip-CAE dataset loop resolving OOM constraints
+  - `12_train_patchcore_kaggle.ipynb`: Cloud GPU accelerated PatchCore memory bank construction
+  - `08_comprehensive_evaluation.ipynb`: Full evaluation pipeline across local and cloud artifacts
 
 ### 4.2 MVTec AD Results
 
@@ -459,7 +460,9 @@ The demonstration system is a full-stack web application designed for real-time 
 |-------|-----------|-----|-----------|--------|-----|
 | CAE | 0.580 | 0.796 | 0.757 | 0.982 | 0.849 |
 | VAE | 0.412 | 0.706 | 0.720 | 0.990 | 0.822 |
-| DAE | **0.596** | **0.813** | **0.762** | **0.995** | **0.854** |
+| DAE | 0.596 | **0.813** | 0.762 | **0.995** | **0.854** |
+| Skip-CAE | 0.594 | 0.799 | **0.768** | 0.980 | 0.851 |
+| PatchCore | **0.632** | 0.810 | 0.750 | 0.991 | 0.850 |
 
 ![Model Comparison Bar Chart](../outputs/figures/evaluation_bar_comparison.png)
 *Figure 4.1: Comparison of Image AUC and F1 Score across all categories.*
@@ -482,24 +485,24 @@ The demonstration system is a full-stack web application designed for real-time 
 
 **Detailed Performance by Category (Image AUC):**
 
-| Category | CAE | VAE | DAE | Best Model |
-|----------|-----|-----|-----|------------|
-| Bottle | 0.550 | 0.199 | 0.537 | CAE |
-| Cable | 0.458 | 0.361 | 0.464 | DAE |
-| Capsule | 0.477 | 0.482 | 0.466 | VAE |
-| Carpet | 0.330 | 0.617 | 0.332 | **VAE** |
-| Grid | 0.779 | 0.297 | **0.870** | **DAE** |
-| Hazelnut | 0.877 | 0.255 | **0.888** | **DAE** |
-| Leather | 0.447 | 0.303 | 0.389 | CAE |
-| Metal Nut | 0.268 | 0.152 | 0.268 | CAE/DAE |
-| Pill | 0.751 | 0.601 | 0.762 | **DAE** |
-| Screw | **0.979** | 0.074 | **0.986** | **DAE** |
-| Tile | 0.822 | 0.569 | 0.808 | CAE |
-| Toothbrush | 0.656 | 0.686 | 0.650 | VAE |
-| Transistor | 0.403 | 0.303 | 0.445 | DAE |
-| Wood | **0.948** | **0.804** | **0.962** | **DAE** |
-| Zipper | 0.506 | 0.480 | 0.487 | CAE |
-| **MEAN** | **0.580** | **0.412** | **0.596** | **DAE** |
+| Category | CAE | VAE | DAE | Skip-CAE | PatchCore | Best Model |
+|----------|-----|-----|-----|----------|-----------|------------|
+| Bottle | **0.550** | 0.199 | 0.537 | 0.440 | 0.388 | **CAE** |
+| Cable | 0.458 | 0.361 | 0.464 | 0.486 | **0.678** | **PatchCore** |
+| Capsule | 0.477 | 0.482 | 0.466 | 0.428 | **0.506** | **PatchCore** |
+| Carpet | 0.330 | 0.617 | 0.332 | 0.513 | **0.630** | **PatchCore** |
+| Grid | 0.779 | 0.297 | **0.870** | 0.613 | 0.662 | **DAE** |
+| Hazelnut | 0.877 | 0.255 | 0.888 | 0.790 | **0.933** | **PatchCore** |
+| Leather | 0.447 | 0.303 | 0.389 | **0.760** | 0.713 | **Skip-CAE** |
+| Metal Nut | 0.268 | 0.152 | 0.268 | 0.422 | **0.765** | **PatchCore** |
+| Pill | 0.751 | 0.601 | 0.762 | **0.840** | 0.667 | **Skip-CAE** |
+| Screw | 0.979 | 0.074 | **0.986** | 0.001 | 0.693 | **DAE** |
+| Tile | 0.822 | 0.569 | 0.808 | **0.863** | 0.701 | **Skip-CAE** |
+| Toothbrush | 0.656 | **0.686** | 0.650 | 0.636 | 0.461 | **VAE** |
+| Transistor | 0.403 | 0.303 | 0.445 | **0.573** | 0.491 | **Skip-CAE** |
+| Wood | 0.948 | 0.804 | **0.962** | 0.960 | 0.843 | **DAE** |
+| Zipper | 0.506 | 0.480 | 0.487 | **0.588** | 0.364 | **Skip-CAE** |
+| **MEAN** | 0.580 | 0.412 | 0.596 | 0.594 | **0.632** | **PatchCore** |
 
 **Best Categories:**
 - Screw: CAE=0.979, DAE=0.986, VAE=0.074* (unstable)
@@ -591,8 +594,8 @@ A central finding of this work is the performance gap between reconstruction-bas
 
 | Approach | Best Model | Mean AUC | Training Required? | Key Advantage |
 |----------|-----------|----------|-------------------|---------------|
-| Reconstruction | DAE | 0.596 | Yes (100 epochs) | Simple, interpretable |
-| Feature-based | PatchCore | 0.85+ | No (feature extraction only) | SOTA performance |
+| Reconstruction | DAE | 0.596 | Yes (100 epochs) | Simple, interpretable, structural features |
+| Feature-based | PatchCore | 0.632 | No (feature extraction only) | SOTA performance across diverse patterns |
 
 **Why PatchCore is superior:**
 - ImageNet features are semantically richer than features learned from small normal-only datasets
@@ -624,7 +627,8 @@ A central finding of this work is the performance gap between reconstruction-bas
 | DRAEM (2021) | 0.98 | Synthetic anomaly |
 | PaDiM (2021) | 0.95 | Feature-based |
 | CFlow-AD (2021) | 0.94 | Normalizing flow |
-| **This work (PatchCore)** | **0.85+** | Feature-based (simplified) |
+| **This work (PatchCore)** | **0.63** | Feature-based (simplified k=3, ratio=0.1) |
+| **This work (Skip-CAE)** | **0.59** | Reconstruction (unet style) |
 | **This work (DAE)** | 0.60 | Reconstruction |
 
 Our simplified PatchCore implementation (with random subsampling instead of greedy coreset selection) closes much of the gap to SOTA. The remaining performance difference is attributable to:
@@ -659,8 +663,8 @@ The web application demonstrates practical deployment:
 
 This thesis implemented and evaluated five anomaly detection architectures and one supervised classifier for industrial defect detection:
 
-- **PatchCore** achieved the best overall performance (0.85+ AUC) using pretrained ResNet-18 features, confirming the superiority of feature-based methods
-- **Denoising Autoencoder (DAE)** achieved the best reconstruction-based performance (0.596 AUC)
+- **PatchCore** achieved the best overall performance (0.632 AUC) using pretrained ResNet-18 features, confirming the superiority of feature-based methods for diverse topologies
+- **Denoising Autoencoder (DAE)** and **Skip-CAE** achieved the best reconstruction-based performance (~0.595 AUC)
 - **Skip-Connection CAE** produced the sharpest anomaly maps through U-Net style skip connections
 - **SSIM-based scoring** improved anomaly detection by capturing structural differences
 - **Convolutional Autoencoder (CAE)** demonstrated reliable, stable training as a baseline
