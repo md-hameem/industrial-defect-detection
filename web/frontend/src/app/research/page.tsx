@@ -29,6 +29,20 @@ const mvtecResults = {
     { category: "screw", auc: 0.986 }, { category: "tile", auc: 0.808 }, { category: "toothbrush", auc: 0.650 },
     { category: "transistor", auc: 0.445 }, { category: "wood", auc: 0.962 }, { category: "zipper", auc: 0.487 },
   ],
+  SKIP_CAE: [
+    { category: "bottle", auc: 0.440 }, { category: "cable", auc: 0.486 }, { category: "capsule", auc: 0.428 },
+    { category: "carpet", auc: 0.513 }, { category: "grid", auc: 0.613 }, { category: "hazelnut", auc: 0.790 },
+    { category: "leather", auc: 0.760 }, { category: "metal_nut", auc: 0.422 }, { category: "pill", auc: 0.840 },
+    { category: "screw", auc: 0.001 }, { category: "tile", auc: 0.863 }, { category: "toothbrush", auc: 0.636 },
+    { category: "transistor", auc: 0.573 }, { category: "wood", auc: 0.960 }, { category: "zipper", auc: 0.588 },
+  ],
+  PATCHCORE: [
+    { category: "bottle", auc: 0.388 }, { category: "cable", auc: 0.678 }, { category: "capsule", auc: 0.506 },
+    { category: "carpet", auc: 0.630 }, { category: "grid", auc: 0.662 }, { category: "hazelnut", auc: 0.933 },
+    { category: "leather", auc: 0.713 }, { category: "metal_nut", auc: 0.765 }, { category: "pill", auc: 0.667 },
+    { category: "screw", auc: 0.693 }, { category: "tile", auc: 0.701 }, { category: "toothbrush", auc: 0.461 },
+    { category: "transistor", auc: 0.491 }, { category: "wood", auc: 0.843 }, { category: "zipper", auc: 0.364 },
+  ],
 };
 
 const crossDatasetResults = [
@@ -45,6 +59,8 @@ const evaluationSummary = {
   CAE: { image_auc: 0.580, image_ap: 0.796, precision: 0.757, recall: 0.982, f1: 0.849, pixel_auc: 0.618, mean_iou: 0.011, mean_dice: 0.020, best: "screw", worst: "metal_nut" },
   VAE: { image_auc: 0.412, image_ap: 0.706, precision: 0.720, recall: 0.990, f1: 0.822, pixel_auc: 0.524, mean_iou: 0.025, mean_dice: 0.044, best: "wood", worst: "screw" },
   DAE: { image_auc: 0.596, image_ap: 0.813, precision: 0.762, recall: 0.995, f1: 0.854, pixel_auc: 0.595, mean_iou: 0.012, mean_dice: 0.022, best: "screw", worst: "metal_nut" },
+  SKIP_CAE: { image_auc: 0.594, image_ap: 0.799, precision: 0.760, recall: 0.980, f1: 0.851, pixel_auc: 0.590, mean_iou: 0.010, mean_dice: 0.019, best: "wood", worst: "screw" },
+  PATCHCORE: { image_auc: 0.633, image_ap: 0.810, precision: 0.770, recall: 0.975, f1: 0.850, pixel_auc: 0.610, mean_iou: 0.013, mean_dice: 0.024, best: "hazelnut", worst: "zipper" },
 };
 
 const figures = [
@@ -74,7 +90,7 @@ const getAucBg = (auc: number) => {
 
 export default function ResearchPage() {
   const { darkMode } = useTheme();
-  const [selectedModel, setSelectedModel] = useState<"CAE" | "VAE" | "DAE">("CAE");
+  const [selectedModel, setSelectedModel] = useState<"CAE" | "VAE" | "DAE" | "SKIP_CAE" | "PATCHCORE">("CAE");
   const [selectedFigure, setSelectedFigure] = useState<number | null>(null);
 
   const modelData = mvtecResults[selectedModel];
@@ -90,7 +106,7 @@ export default function ResearchPage() {
   const tableHover = darkMode ? "hover:bg-white/[0.03]" : "hover:bg-slate-50";
   const tableBorder = darkMode ? "border-white/[0.06]" : "border-slate-200";
   const subtleBg = darkMode ? "bg-white/[0.03]" : "bg-slate-100";
-  const modelColors: Record<string, string> = { CAE: "blue", VAE: "purple", DAE: "orange" };
+  const modelColors: Record<string, string> = { CAE: "blue", VAE: "purple", DAE: "orange", SKIP_CAE: "teal", PATCHCORE: "rose" };
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-8">
@@ -167,12 +183,15 @@ export default function ResearchPage() {
           <h2 className={`text-2xl font-bold flex items-center gap-2 ${textPrimary}`}>
             <TrendingUp className="w-6 h-6 text-blue-400" /> MVTec AD Performance
           </h2>
-          <div className="flex gap-2">
-            {(["CAE", "VAE", "DAE"] as const).map((model) => (
-              <button key={model} onClick={() => setSelectedModel(model)} className={`px-4 py-2 rounded-xl font-medium transition cursor-pointer ${selectedModel === model ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg shadow-blue-500/20" : `${subtleBg} ${darkMode ? "text-slate-400 hover:text-white hover:bg-white/[0.06]" : "text-slate-600 hover:bg-slate-200"}`}`}>
-                {model}
+          <div className="flex gap-2 flex-wrap">
+            {(["CAE", "VAE", "DAE", "SKIP_CAE", "PATCHCORE"] as const).map((model) => {
+              const gradients: Record<string, string> = { CAE: "from-blue-500 to-cyan-500", VAE: "from-purple-500 to-pink-500", DAE: "from-orange-500 to-red-500", SKIP_CAE: "from-teal-500 to-cyan-600", PATCHCORE: "from-rose-500 to-pink-600" };
+              const labels: Record<string, string> = { CAE: "CAE", VAE: "VAE", DAE: "DAE", SKIP_CAE: "Skip-CAE", PATCHCORE: "PatchCore" };
+              return (
+              <button key={model} onClick={() => setSelectedModel(model)} className={`px-4 py-2 rounded-xl font-medium transition cursor-pointer ${selectedModel === model ? `bg-gradient-to-r ${gradients[model]} text-white shadow-lg shadow-blue-500/20` : `${subtleBg} ${darkMode ? "text-slate-400 hover:text-white hover:bg-white/[0.06]" : "text-slate-600 hover:bg-slate-200"}`}`}>
+                {labels[model]}
               </button>
-            ))}
+            );})}
           </div>
         </div>
 
@@ -263,15 +282,16 @@ export default function ResearchPage() {
         <h2 className={`text-2xl font-bold mb-6 flex items-center gap-2 ${textPrimary}`}>
           <Layers className="w-6 h-6 text-blue-400" /> Comprehensive Evaluation Metrics
         </h2>
-        <p className={`mb-6 ${textSecondary}`}>Complete evaluation results across all 15 MVTec AD categories.</p>
+        <p className={`mb-6 ${textSecondary}`}>Complete evaluation results across all 15 MVTec AD categories for all 5 models.</p>
         
-        <div className="grid md:grid-cols-3 gap-5">
-          {(["CAE", "VAE", "DAE"] as const).map((model, i) => {
+        <div className="grid md:grid-cols-3 lg:grid-cols-5 gap-5">
+          {(["CAE", "VAE", "DAE", "SKIP_CAE", "PATCHCORE"] as const).map((model, i) => {
             const data = evaluationSummary[model];
             const color = modelColors[model];
+            const displayName: Record<string, string> = { CAE: "CAE", VAE: "VAE", DAE: "DAE", SKIP_CAE: "Skip-CAE", PATCHCORE: "PatchCore" };
             return (
               <motion.div key={model} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 + i * 0.1 }} whileHover={{ y: -4 }} className={`p-6 rounded-2xl card-3d-subtle cursor-default ${cardClass}`}>
-                <div className={`text-2xl font-black mb-4 text-${color}-400`}>{model}</div>
+                <div className={`text-2xl font-black mb-4 text-${color}-400`}>{displayName[model]}</div>
                 
                 <div className="mb-4">
                   <div className={`text-xs uppercase tracking-wider mb-2 ${textMuted}`}>Image-Level</div>
@@ -329,11 +349,13 @@ export default function ResearchPage() {
         <h2 className={`text-2xl font-bold mb-6 flex items-center gap-2 ${textPrimary}`}>
           <Brain className="w-6 h-6 text-blue-400" /> Model Architecture Comparison
         </h2>
-        <div className="grid md:grid-cols-3 gap-5">
+        <div className="grid md:grid-cols-3 lg:grid-cols-5 gap-5">
           {[
             { name: "CAE", full: "Convolutional Autoencoder", meanAuc: 0.617, gradient: "from-blue-500 to-cyan-500", pros: ["Simple architecture", "Stable training", "Best generalization"], cons: ["No probabilistic latent space"], bestOn: "Screw (0.98)" },
-            { name: "VAE", full: "Variational Autoencoder", meanAuc: 0.476, gradient: "from-purple-500 to-pink-500", pros: ["Probabilistic encoding", "Latent space sampling"], cons: ["KL divergence instability", "Lower AUC"], bestOn: "Screw (1.00)*" },
-            { name: "DAE", full: "Denoising Autoencoder", meanAuc: 0.621, gradient: "from-orange-500 to-red-500", pros: ["Robust to noise", "Good on textures", "Best mean AUC"], cons: ["Requires noise tuning"], bestOn: "Screw (0.99)" },
+            { name: "VAE", full: "Variational Autoencoder", meanAuc: 0.412, gradient: "from-purple-500 to-pink-500", pros: ["Probabilistic encoding", "Latent space sampling"], cons: ["KL divergence instability", "Lower AUC"], bestOn: "Wood (0.80)" },
+            { name: "DAE", full: "Denoising Autoencoder", meanAuc: 0.621, gradient: "from-orange-500 to-red-500", pros: ["Robust to noise", "Good on textures"], cons: ["Requires noise tuning"], bestOn: "Screw (0.99)" },
+            { name: "Skip-CAE", full: "U-Net Skip Connections", meanAuc: 0.594, gradient: "from-teal-500 to-cyan-600", pros: ["Skip connections", "Sharper reconstructions"], cons: ["Unstable on screw"], bestOn: "Wood (0.96)" },
+            { name: "PatchCore", full: "Feature Memory Bank", meanAuc: 0.633, gradient: "from-rose-500 to-pink-600", pros: ["No training needed", "SOTA method", "Highest mean AUC"], cons: ["Large memory bank"], bestOn: "Hazelnut (0.93)" },
           ].map((model, i) => (
             <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 + i * 0.1 }} whileHover={{ y: -6 }} className={`p-6 rounded-2xl relative overflow-hidden group card-3d-subtle cursor-default ${cardClass}`}>
               <div className={`absolute inset-0 bg-gradient-to-br ${model.gradient} opacity-0 group-hover:opacity-[0.06] transition-opacity duration-500`} />

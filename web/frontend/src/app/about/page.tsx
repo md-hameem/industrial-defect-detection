@@ -11,7 +11,7 @@ import {
 
 const projectFeatures = [
   { icon: Search, title: "Unsupervised Detection", desc: "Train on normal samples only - no labeled defects required" },
-  { icon: Brain, title: "Multiple Architectures", desc: "CAE, VAE, and Denoising AE implementations" },
+  { icon: Brain, title: "6 Model Architectures", desc: "CAE, VAE, DAE, Skip-CAE, PatchCore + CNN classifier" },
   { icon: Thermometer, title: "Visual Heatmaps", desc: "Pixel-level anomaly localization with color overlays" },
   { icon: Cpu, title: "CPU Optimized", desc: "Designed for training without GPU hardware" },
   { icon: Shuffle, title: "Cross-Dataset Testing", desc: "Generalization evaluation on unseen domains" },
@@ -20,8 +20,10 @@ const projectFeatures = [
 
 const architectures = [
   { name: "CAE", full: "Convolutional Autoencoder", desc: "Encoder-decoder architecture that learns compressed representations of normal images. Anomalies produce high reconstruction error.", layers: "Encoder: 4 Conv layers (32→64→128→256) | Decoder: 4 ConvTranspose layers", auc: "0.617" },
-  { name: "VAE", full: "Variational Autoencoder", desc: "Probabilistic autoencoder with latent space sampling using reparameterization trick. Combines reconstruction and KL divergence loss.", layers: "Same architecture + μ/σ layers for latent sampling", auc: "0.476" },
+  { name: "VAE", full: "Variational Autoencoder", desc: "Probabilistic autoencoder with latent space sampling using reparameterization trick. Combines reconstruction and KL divergence loss.", layers: "Same architecture + μ/σ layers for latent sampling", auc: "0.412" },
   { name: "DAE", full: "Denoising Autoencoder", desc: "Trained to reconstruct clean images from noisy inputs, learning robust features that generalize better to anomalies.", layers: "CAE architecture + Gaussian noise injection (σ=0.3)", auc: "0.621" },
+  { name: "Skip-CAE", full: "Skip-Connection CAE (U-Net)", desc: "Adds U-Net-style skip connections between encoder and decoder, preserving spatial details for sharper reconstructions and better localization.", layers: "Encoder-Decoder with 4 skip connections | 50 epochs on Kaggle T4 GPU", auc: "0.594" },
+  { name: "PatchCore", full: "Patch-Level Feature Bank", desc: "SOTA method using a pretrained WideResNet-50 backbone. Builds a memory bank of normal patch features and detects anomalies by nearest-neighbor distance — no training needed.", layers: "WideResNet-50 (pretrained) → feature extraction → coreset subsampling", auc: "0.633" },
 ];
 
 const datasets = [
@@ -87,7 +89,8 @@ export default function AboutPage() {
             <p className={`text-lg leading-relaxed text-center max-w-4xl mx-auto ${textSecondary}`}>
               Develop an <strong className={textPrimary}>unsupervised anomaly detection system</strong> that can identify manufacturing 
               defects by training only on normal (defect-free) samples. This approach eliminates the need for expensive labeled 
-              defect data, making it practical for real-world industrial quality control applications.
+              defect data. The system features 5 anomaly detection models (CAE, VAE, DAE, Skip-CAE, PatchCore) plus a CNN classifier,
+              making it practical for real-world industrial quality control applications.
             </p>
           </div>
         </div>

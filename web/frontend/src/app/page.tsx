@@ -8,10 +8,10 @@ import { Search, BarChart3, Image as ImageIcon, Zap, RefreshCw, History, Upload,
 
 const features = [
   { icon: Search, title: "Real-time Detection", desc: "Upload any industrial image for instant defect analysis using trained AI models" },
-  { icon: Brain, title: "Multiple AI Models", desc: "Choose from CAE, VAE, or Denoising Autoencoder based on your needs" },
+  { icon: Brain, title: "6 AI Models", desc: "CAE, VAE, DAE, Skip-CAE, PatchCore (SOTA), and CNN classifier" },
   { icon: BarChart3, title: "Visual Heatmaps", desc: "See exactly where defects are located with color-coded anomaly maps" },
   { icon: Zap, title: "Fast Processing", desc: "CPU-optimized inference delivers results in seconds, not minutes" },
-  { icon: RefreshCw, title: "Model Comparison", desc: "Run all three models simultaneously to compare detection results" },
+  { icon: RefreshCw, title: "Model Comparison", desc: "Run all five anomaly models simultaneously to compare detection results" },
   { icon: History, title: "History Tracking", desc: "Keep track of all your predictions with filtering and export options" },
 ];
 
@@ -19,12 +19,12 @@ const stats = [
   { value: "15", label: "MVTec Categories", icon: Layers, color: "blue" },
   { value: "99%", label: "CNN Accuracy", icon: Award, color: "emerald" },
   { value: "0.69", label: "Cross-dataset AUC", icon: Shuffle, color: "purple" },
-  { value: "45+", label: "Trained Models", icon: Brain, color: "cyan" },
+  { value: "60+", label: "Trained Models", icon: Brain, color: "cyan" },
 ];
 
 const workflow = [
   { step: 1, title: "Upload", desc: "Drag & drop your industrial image", icon: Upload },
-  { step: 2, title: "Select Model", desc: "Choose CAE, VAE, or DAE", icon: Settings },
+  { step: 2, title: "Select Model", desc: "Choose from 6 AI models", icon: Settings },
   { step: 3, title: "Analyze", desc: "AI processes your image in seconds", icon: Zap },
   { step: 4, title: "Review", desc: "View heatmap and anomaly score", icon: BarChart2 },
 ];
