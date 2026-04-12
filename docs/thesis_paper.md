@@ -267,7 +267,7 @@ Output: 256×256×3
 - **Latent Dimension**: 128 channels (dense layers project 16×16×256 ↔ 128)
 - **Reparameterization Trick**: z = μ + σ × ε, where ε ~ N(0, 1)
 - **Logvar Clamping**: clamp(logvar, -20, 2) to prevent numerical instability during training
-- **KL Annealing**: β increases linearly from 0 to 1 over first 10 epochs
+- **KL Annealing**: β increases linearly from 0 to β_max=0.001 over first 10 epochs (heavily prioritizing reconstruction over KL regularization)
 
 #### 3.3.4 Skip-Connection CAE (U-Net Style)
 
@@ -351,18 +351,18 @@ A lightweight CNN is implemented for supervised classification on the NEU datase
   - Each block: Conv2d(3×3) → BatchNorm → ReLU → MaxPool2d(2×2)
 - **Global Pooling**: Adaptive Average Pooling (reduces spatial dims to 1×1)
 - **Classifier Head**: Dropout(p=0.5) → Linear(256 → 6 classes)
-- **Total Parameters**: ~11.1M (optimized for CPU inference)
+- **Total Parameters**: ~400K (optimized for CPU inference)
 
 ### 3.4 Training Configuration
 
 | Parameter | Value |
 |-----------|-------|
 | Batch Size | 16 |
-| Learning Rate | 1e-4 |
-| Optimizer | Adam |
+| Learning Rate | 1e-3 |
+| Optimizer | Adam (weight_decay=1e-5) |
 | Epochs | 100 |
 | Early Stopping | patience=10 |
-| Loss Function | MSE (+ KL for VAE) |
+| Loss Function | Combined (0.8×MSE + 0.2×SSIM) for CAE/DAE/SkipCAE; MSE+β×KL for VAE |
 | Device | CPU (auto-detects CUDA) |
 | Augmentation | Standard (flip, rotate) |
 
@@ -550,7 +550,6 @@ The demonstration system is a full-stack web application designed for real-time 
 ### 4.5 Visualization Examples
 
 #### Reconstruction Comparison
-#### Reconstruction Comparison
 ![Reconstructions](../outputs/figures/thesis_fig4_reconstructions.png)
 *Figure 4.7: Reconstruction examples showing input, reconstruction, error map, and ground truth.*
 
@@ -566,7 +565,7 @@ The demonstration system is a full-stack web application designed for real-time 
 
 1. **DAE slightly outperforms CAE in reconstruction-based methods**: The noise injection during training appears to improve robustness, achieving 0.596 vs 0.580 image AUC.
 
-2. **PatchCore dramatically outperforms all reconstruction-based methods**: Using pretrained ResNet-18 features with nearest-neighbor scoring achieves 0.85+ AUC—a ~43% improvement over the best autoencoder (DAE at 0.596). This confirms the findings of Roth et al. (2022) that feature-based methods are fundamentally superior to reconstruction-based approaches for anomaly detection.
+2. **PatchCore outperforms all reconstruction-based methods**: Using pretrained ResNet-18 features with nearest-neighbor scoring achieves 0.632 mean AUC—a ~6% improvement over the best autoencoder (DAE at 0.596). While our simplified implementation (random subsampling, k=3) does not reach the 0.99 AUC reported by Roth et al. (2022) with full coreset selection, it still demonstrates the advantage of feature-based approaches over reconstruction-based methods.
 
 3. **Skip connections improve anomaly map quality**: The Skip-CAE produces sharper, more spatially precise anomaly maps compared to the vanilla CAE. By preserving high-resolution features through skip connections, defect boundaries are better defined in the error map. This is a known benefit from the U-Net architecture in segmentation tasks.
 
@@ -689,7 +688,7 @@ A full-stack web application was developed with batch model comparison, Gaussian
 1. **How effective are autoencoder-based methods?** Moderately effective (0.58–0.60 AUC), with significant category dependence.
 2. **Which autoencoder architecture performs best?** DAE slightly outperforms CAE; VAE underperforms due to bottleneck compression.
 3. **Can architectural innovations improve detection?** Yes—skip connections improve anomaly map quality; SSIM scoring captures structural anomalies that MSE misses.
-4. **How do reconstruction methods compare to SOTA?** Feature-based PatchCore (0.85+ AUC) dramatically outperforms all reconstruction methods (~0.60 AUC), confirming that pretrained features are superior to learned reconstructions.
+4. **How do reconstruction methods compare to SOTA?** Feature-based PatchCore (0.632 AUC) outperforms all reconstruction methods (~0.60 AUC), confirming that pretrained features are superior to learned reconstructions. The gap between our simplified implementation and the original paper's 0.99 AUC is attributable to simplified coreset selection and fewer ensemble features.
 5. **Can models generalize across datasets?** Yes—up to 0.69 AUC on Kolektor using MVTec-trained models.
 6. **How can models be deployed?** Through a Next.js + FastAPI web application with batch inference and security features.
 
@@ -759,10 +758,10 @@ Thesis/
 | Hyperparameter | CAE | VAE | DAE | Skip-CAE | PatchCore |
 |---------------|-----|-----|-----|----------|----------|
 | Latent Channels | 256 | 256 | 256 | 256 | N/A |
-| Learning Rate | 1e-4 | 1e-4 | 1e-4 | 1e-4 | N/A |
+| Learning Rate | 1e-3 | 1e-3 | 1e-3 | 1e-3 | N/A |
 | Batch Size | 16 | 16 | 16 | 16 | 16 |
 | Noise Factor | - | - | 0.3 | - | - |
-| KL Beta (final) | - | 1.0 | - | - | - |
+| KL Beta (final) | - | 0.001 | - | - | - |
 | Epochs | 100 | 100 | 100 | 100 | N/A |
 | k-NN | - | - | - | - | 3 |
 | Subsample Ratio | - | - | - | - | 0.1 |
@@ -777,7 +776,7 @@ Thesis/
 | DAE | 2,764,099 | 2,764,099 | Reconstruction |
 | Skip-CAE | ~4,200,000 | ~4,200,000 | Reconstruction (U-Net) |
 | PatchCore | 11,689,512 | 0 | Feature-based (frozen) |
-| CNN | 11,177,030 | 11,177,030 | Classification |
+| CNN | ~400,000 | ~400,000 | Classification |
 
 ### Appendix D: Detailed Reconstruction Results (MVTec AD)
 
