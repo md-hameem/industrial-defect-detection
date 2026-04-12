@@ -41,20 +41,10 @@ const crossDatasetResults = [
   { trained: "leather", cae: 0.668, vae: 0.463, dae: 0.646 },
 ];
 
-// Comprehensive Evaluation Summary (from comprehensive_metrics_report.csv)
 const evaluationSummary = {
-  CAE: {
-    image_auc: 0.580, image_ap: 0.796, precision: 0.757, recall: 0.982, f1: 0.849,
-    pixel_auc: 0.618, mean_iou: 0.011, mean_dice: 0.020, best: "screw", worst: "metal_nut"
-  },
-  VAE: {
-    image_auc: 0.412, image_ap: 0.706, precision: 0.720, recall: 0.990, f1: 0.822,
-    pixel_auc: 0.524, mean_iou: 0.025, mean_dice: 0.044, best: "wood", worst: "screw"
-  },
-  DAE: {
-    image_auc: 0.596, image_ap: 0.813, precision: 0.762, recall: 0.995, f1: 0.854,
-    pixel_auc: 0.595, mean_iou: 0.012, mean_dice: 0.022, best: "screw", worst: "metal_nut"
-  }
+  CAE: { image_auc: 0.580, image_ap: 0.796, precision: 0.757, recall: 0.982, f1: 0.849, pixel_auc: 0.618, mean_iou: 0.011, mean_dice: 0.020, best: "screw", worst: "metal_nut" },
+  VAE: { image_auc: 0.412, image_ap: 0.706, precision: 0.720, recall: 0.990, f1: 0.822, pixel_auc: 0.524, mean_iou: 0.025, mean_dice: 0.044, best: "wood", worst: "screw" },
+  DAE: { image_auc: 0.596, image_ap: 0.813, precision: 0.762, recall: 0.995, f1: 0.854, pixel_auc: 0.595, mean_iou: 0.012, mean_dice: 0.022, best: "screw", worst: "metal_nut" },
 };
 
 const figures = [
@@ -92,24 +82,28 @@ export default function ResearchPage() {
   const bestCategory = modelData.reduce((best, r) => r.auc > best.auc ? r : best);
   const worstCategory = modelData.reduce((worst, r) => r.auc < worst.auc ? r : worst);
 
-  // Theme-aware classes
-  const cardBg = darkMode ? "bg-slate-800/50 border-white/10" : "bg-white/80 border-slate-200 shadow-sm";
+  const cardClass = darkMode ? "glass inner-glow" : "bg-white/80 border border-slate-200 shadow-sm";
   const textPrimary = darkMode ? "text-white" : "text-slate-900";
   const textSecondary = darkMode ? "text-slate-400" : "text-slate-600";
   const textMuted = darkMode ? "text-slate-500" : "text-slate-400";
-  const tableBg = darkMode ? "bg-slate-800/80" : "bg-slate-100";
-  const tableHover = darkMode ? "hover:bg-white/5" : "hover:bg-slate-50";
-  const tableBorder = darkMode ? "border-white/5" : "border-slate-200";
-  const buttonBg = darkMode ? "bg-slate-800/50 text-slate-400 hover:bg-slate-700" : "bg-slate-100 text-slate-600 hover:bg-slate-200";
-  const figBg = darkMode ? "bg-slate-900" : "bg-slate-100";
+  const tableHeaderBg = darkMode ? "bg-white/[0.03]" : "bg-slate-100";
+  const tableHover = darkMode ? "hover:bg-white/[0.03]" : "hover:bg-slate-50";
+  const tableBorder = darkMode ? "border-white/[0.06]" : "border-slate-200";
+  const subtleBg = darkMode ? "bg-white/[0.03]" : "bg-slate-100";
+  const modelColors: Record<string, string> = { CAE: "blue", VAE: "purple", DAE: "orange" };
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-8">
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-12">
-        <h1 className="text-4xl font-bold mb-4 flex items-center gap-3">
-          <BarChart3 className="w-10 h-10 text-blue-400" />
-          <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">Research Results</span>
+        <h1 className="text-4xl md:text-5xl font-bold mb-4 flex items-center gap-3">
+          <div className="relative">
+            <div className="absolute inset-0 bg-blue-500/30 rounded-xl blur-xl glow-halo" />
+            <div className="relative w-12 h-12 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
+              <BarChart3 className="w-6 h-6 text-white" />
+            </div>
+          </div>
+          <span className="text-gradient-animated">Research Results</span>
         </h1>
         <p className={`text-xl ${textSecondary}`}>Complete experimental results from the thesis research</p>
       </motion.div>
@@ -123,7 +117,7 @@ export default function ResearchPage() {
             { value: "99%", label: "CNN Accuracy", icon: Award, color: "emerald" },
             { value: "0.69", label: "Best Cross-dataset", icon: Shuffle, color: "orange" },
           ].map((stat, i) => (
-            <motion.div key={i} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.1 }} whileHover={{ scale: 1.03 }} className={`p-6 rounded-2xl border text-center ${cardBg}`}>
+            <motion.div key={i} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.1 }} whileHover={{ y: -4, scale: 1.02 }} className={`p-6 rounded-2xl text-center card-3d-subtle cursor-default ${cardClass}`}>
               <stat.icon className={`w-8 h-8 mx-auto mb-2 text-${stat.color}-400`} />
               <div className={`text-3xl font-black text-${stat.color}-400`}>{stat.value}</div>
               <div className={`text-sm ${textSecondary}`}>{stat.label}</div>
@@ -137,11 +131,11 @@ export default function ResearchPage() {
         <h2 className={`text-2xl font-bold mb-6 flex items-center gap-2 ${textPrimary}`}>
           <TrendingUp className="w-6 h-6 text-blue-400" /> Thesis Figures
         </h2>
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid md:grid-cols-2 gap-5">
           {figures.map((fig, i) => (
-            <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 + i * 0.1 }} whileHover={{ scale: 1.02 }} onClick={() => setSelectedFigure(i)} className={`cursor-pointer rounded-2xl overflow-hidden border group ${cardBg}`}>
-              <div className="relative h-48 overflow-hidden">
-                <Image src={fig.src} alt={fig.title} fill className={`object-contain ${figBg} group-hover:scale-105 transition-transform`} />
+            <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 + i * 0.05 }} whileHover={{ y: -4 }} onClick={() => setSelectedFigure(i)} className={`cursor-pointer rounded-2xl overflow-hidden group card-3d-subtle ${cardClass}`}>
+              <div className={`relative h-48 overflow-hidden ${subtleBg}`}>
+                <Image src={fig.src} alt={fig.title} fill className="object-contain group-hover:scale-105 transition-transform duration-500" />
               </div>
               <div className="p-4">
                 <h3 className={`font-bold mb-1 ${textPrimary}`}>{fig.title}</h3>
@@ -155,8 +149,8 @@ export default function ResearchPage() {
       {/* Figure Modal */}
       <AnimatePresence>
         {selectedFigure !== null && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSelectedFigure(null)} className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-8 cursor-pointer">
-            <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }} className="relative max-w-5xl w-full">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSelectedFigure(null)} className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-8 cursor-pointer">
+            <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }} className="relative max-w-5xl w-full">
               <Image src={figures[selectedFigure].src} alt={figures[selectedFigure].title} width={1200} height={800} className="rounded-xl" />
               <div className="mt-4 text-center text-white">
                 <h3 className="text-xl font-bold">{figures[selectedFigure].title}</h3>
@@ -175,7 +169,7 @@ export default function ResearchPage() {
           </h2>
           <div className="flex gap-2">
             {(["CAE", "VAE", "DAE"] as const).map((model) => (
-              <button key={model} onClick={() => setSelectedModel(model)} className={`px-4 py-2 rounded-lg font-medium transition ${selectedModel === model ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white" : buttonBg}`}>
+              <button key={model} onClick={() => setSelectedModel(model)} className={`px-4 py-2 rounded-xl font-medium transition cursor-pointer ${selectedModel === model ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg shadow-blue-500/20" : `${subtleBg} ${darkMode ? "text-slate-400 hover:text-white hover:bg-white/[0.06]" : "text-slate-600 hover:bg-slate-200"}`}`}>
                 {model}
               </button>
             ))}
@@ -184,18 +178,18 @@ export default function ResearchPage() {
 
         {/* Summary Stats */}
         <div className="grid grid-cols-3 gap-4 mb-6">
-          <div className={`p-4 rounded-xl border text-center ${cardBg}`}>
+          <div className={`p-4 rounded-xl text-center ${cardClass}`}>
             <div className="text-2xl font-bold text-blue-400">{avgAuc}</div>
             <div className={`text-sm ${textSecondary}`}>Mean AUC</div>
           </div>
-          <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-center flex items-center justify-center gap-2">
+          <div className={`p-4 rounded-xl text-center ${darkMode ? "bg-emerald-500/10 border border-emerald-500/20" : "bg-emerald-50 border border-emerald-200"} flex items-center justify-center gap-2`}>
             <CheckCircle className="w-5 h-5 text-emerald-400" />
             <div>
               <div className="text-lg font-bold text-emerald-400">{bestCategory.category}</div>
               <div className={`text-xs ${textMuted}`}>Best ({bestCategory.auc.toFixed(2)})</div>
             </div>
           </div>
-          <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-center flex items-center justify-center gap-2">
+          <div className={`p-4 rounded-xl text-center ${darkMode ? "bg-rose-500/10 border border-rose-500/20" : "bg-rose-50 border border-rose-200"} flex items-center justify-center gap-2`}>
             <XCircle className="w-5 h-5 text-rose-400" />
             <div>
               <div className="text-lg font-bold text-rose-400">{worstCategory.category}</div>
@@ -205,13 +199,13 @@ export default function ResearchPage() {
         </div>
 
         {/* Table */}
-        <div className={`rounded-2xl overflow-hidden border ${tableBorder}`}>
+        <div className={`rounded-2xl overflow-hidden border ${tableBorder} ${cardClass}`}>
           <table className="w-full">
-            <thead className={tableBg}>
+            <thead className={tableHeaderBg}>
               <tr>
-                <th className={`p-4 text-left ${textSecondary}`}>Category</th>
-                <th className={`p-4 text-center ${textSecondary}`}>ROC-AUC</th>
-                <th className={`p-4 text-left ${textSecondary}`}>Performance</th>
+                <th className={`p-4 text-left font-semibold ${textSecondary}`}>Category</th>
+                <th className={`p-4 text-center font-semibold ${textSecondary}`}>ROC-AUC</th>
+                <th className={`p-4 text-left font-semibold ${textSecondary}`}>Performance</th>
               </tr>
             </thead>
             <tbody>
@@ -223,8 +217,8 @@ export default function ResearchPage() {
                       <span className={`px-3 py-1 rounded-lg text-sm font-bold ${getAucColor(row.auc)}`}>{row.auc.toFixed(3)}</span>
                     </td>
                     <td className="p-4">
-                      <div className={`w-full h-3 rounded-full overflow-hidden ${darkMode ? "bg-slate-700" : "bg-slate-200"}`}>
-                        <motion.div initial={{ width: 0 }} animate={{ width: `${row.auc * 100}%` }} transition={{ duration: 0.5, delay: i * 0.02 }} className={`h-full ${getAucBg(row.auc)}`} />
+                      <div className={`w-full h-3 rounded-full overflow-hidden ${subtleBg}`}>
+                        <motion.div initial={{ width: 0 }} animate={{ width: `${row.auc * 100}%` }} transition={{ duration: 0.5, delay: i * 0.02 }} className={`h-full rounded-full ${getAucBg(row.auc)}`} />
                       </div>
                     </td>
                   </motion.tr>
@@ -240,14 +234,14 @@ export default function ResearchPage() {
         <h2 className={`text-2xl font-bold mb-6 flex items-center gap-2 ${textPrimary}`}>
           <Shuffle className="w-6 h-6 text-blue-400" /> Cross-Dataset Evaluation (MVTec to Kolektor)
         </h2>
-        <div className={`rounded-2xl overflow-hidden border ${tableBorder}`}>
+        <div className={`rounded-2xl overflow-hidden border ${tableBorder} ${cardClass}`}>
           <table className="w-full">
-            <thead className={tableBg}>
+            <thead className={tableHeaderBg}>
               <tr>
-                <th className={`p-4 text-left ${textSecondary}`}>Trained On</th>
-                <th className="p-4 text-center text-blue-400">CAE</th>
-                <th className="p-4 text-center text-orange-400">DAE</th>
-                <th className="p-4 text-center text-purple-400">VAE</th>
+                <th className={`p-4 text-left font-semibold ${textSecondary}`}>Trained On</th>
+                <th className="p-4 text-center text-blue-400 font-semibold">CAE</th>
+                <th className="p-4 text-center text-orange-400 font-semibold">DAE</th>
+                <th className="p-4 text-center text-purple-400 font-semibold">VAE</th>
               </tr>
             </thead>
             <tbody>
@@ -264,80 +258,63 @@ export default function ResearchPage() {
         </div>
       </motion.section>
 
-      {/* Comprehensive Evaluation Section */}
+      {/* Comprehensive Evaluation */}
       <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.55 }} className="mb-12">
         <h2 className={`text-2xl font-bold mb-6 flex items-center gap-2 ${textPrimary}`}>
           <Layers className="w-6 h-6 text-blue-400" /> Comprehensive Evaluation Metrics
         </h2>
-        <p className={`mb-6 ${textSecondary}`}>Complete evaluation results across all 15 MVTec AD categories including image-level and pixel-level metrics.</p>
+        <p className={`mb-6 ${textSecondary}`}>Complete evaluation results across all 15 MVTec AD categories.</p>
         
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-3 gap-5">
           {(["CAE", "VAE", "DAE"] as const).map((model, i) => {
             const data = evaluationSummary[model];
-            const colors = { CAE: "blue", VAE: "purple", DAE: "orange" };
-            const color = colors[model];
+            const color = modelColors[model];
             return (
-              <motion.div 
-                key={model} 
-                initial={{ opacity: 0, y: 20 }} 
-                animate={{ opacity: 1, y: 0 }} 
-                transition={{ delay: 0.6 + i * 0.1 }}
-                className={`p-6 rounded-2xl border ${cardBg}`}
-              >
+              <motion.div key={model} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 + i * 0.1 }} whileHover={{ y: -4 }} className={`p-6 rounded-2xl card-3d-subtle cursor-default ${cardClass}`}>
                 <div className={`text-2xl font-black mb-4 text-${color}-400`}>{model}</div>
                 
-                {/* Image-Level Metrics */}
                 <div className="mb-4">
                   <div className={`text-xs uppercase tracking-wider mb-2 ${textMuted}`}>Image-Level</div>
                   <div className="grid grid-cols-2 gap-2 text-sm">
-                    <div className={`p-2 rounded-lg ${tableBg}`}>
-                      <div className={textMuted}>AUC</div>
-                      <div className={`font-bold ${textPrimary}`}>{data.image_auc.toFixed(3)}</div>
-                    </div>
-                    <div className={`p-2 rounded-lg ${tableBg}`}>
-                      <div className={textMuted}>AP</div>
-                      <div className={`font-bold ${textPrimary}`}>{data.image_ap.toFixed(3)}</div>
-                    </div>
-                    <div className={`p-2 rounded-lg ${tableBg}`}>
-                      <div className={textMuted}>Precision</div>
-                      <div className={`font-bold ${textPrimary}`}>{data.precision.toFixed(3)}</div>
-                    </div>
-                    <div className={`p-2 rounded-lg ${tableBg}`}>
-                      <div className={textMuted}>Recall</div>
-                      <div className={`font-bold ${textPrimary}`}>{data.recall.toFixed(3)}</div>
-                    </div>
+                    {[
+                      { label: "AUC", val: data.image_auc },
+                      { label: "AP", val: data.image_ap },
+                      { label: "Precision", val: data.precision },
+                      { label: "Recall", val: data.recall },
+                    ].map(m => (
+                      <div key={m.label} className={`p-2 rounded-lg ${subtleBg}`}>
+                        <div className={textMuted}>{m.label}</div>
+                        <div className={`font-bold ${textPrimary}`}>{m.val.toFixed(3)}</div>
+                      </div>
+                    ))}
                   </div>
-                  <div className={`mt-2 p-2 rounded-lg text-center ${tableBg}`}>
+                  <div className={`mt-2 p-2 rounded-lg text-center ${subtleBg}`}>
                     <div className={textMuted}>F1 Score</div>
                     <div className={`text-xl font-bold text-${color}-400`}>{data.f1.toFixed(3)}</div>
                   </div>
                 </div>
                 
-                {/* Pixel-Level Metrics */}
                 <div className="mb-4">
                   <div className={`text-xs uppercase tracking-wider mb-2 ${textMuted}`}>Pixel-Level</div>
                   <div className="grid grid-cols-3 gap-2 text-sm">
-                    <div className={`p-2 rounded-lg ${tableBg} text-center`}>
-                      <div className={textMuted}>Pixel AUC</div>
-                      <div className={`font-bold ${textPrimary}`}>{data.pixel_auc.toFixed(3)}</div>
-                    </div>
-                    <div className={`p-2 rounded-lg ${tableBg} text-center`}>
-                      <div className={textMuted}>IoU</div>
-                      <div className={`font-bold ${textPrimary}`}>{data.mean_iou.toFixed(3)}</div>
-                    </div>
-                    <div className={`p-2 rounded-lg ${tableBg} text-center`}>
-                      <div className={textMuted}>Dice</div>
-                      <div className={`font-bold ${textPrimary}`}>{data.mean_dice.toFixed(3)}</div>
-                    </div>
+                    {[
+                      { label: "Pixel AUC", val: data.pixel_auc },
+                      { label: "IoU", val: data.mean_iou },
+                      { label: "Dice", val: data.mean_dice },
+                    ].map(m => (
+                      <div key={m.label} className={`p-2 rounded-lg ${subtleBg} text-center`}>
+                        <div className={textMuted}>{m.label}</div>
+                        <div className={`font-bold ${textPrimary}`}>{m.val.toFixed(3)}</div>
+                      </div>
+                    ))}
                   </div>
                 </div>
                 
-                {/* Best/Worst */}
                 <div className="flex gap-2 text-xs">
-                  <div className="flex-1 p-2 rounded-lg bg-emerald-500/10 text-emerald-400">
+                  <div className={`flex-1 p-2 rounded-lg ${darkMode ? "bg-emerald-500/10" : "bg-emerald-50"} text-emerald-400`}>
                     <CheckCircle className="w-3 h-3 inline mr-1" /> Best: {data.best}
                   </div>
-                  <div className="flex-1 p-2 rounded-lg bg-rose-500/10 text-rose-400">
+                  <div className={`flex-1 p-2 rounded-lg ${darkMode ? "bg-rose-500/10" : "bg-rose-50"} text-rose-400`}>
                     <XCircle className="w-3 h-3 inline mr-1" /> Worst: {data.worst}
                   </div>
                 </div>
@@ -352,16 +329,16 @@ export default function ResearchPage() {
         <h2 className={`text-2xl font-bold mb-6 flex items-center gap-2 ${textPrimary}`}>
           <Brain className="w-6 h-6 text-blue-400" /> Model Architecture Comparison
         </h2>
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-3 gap-5">
           {[
-            { name: "CAE", full: "Convolutional Autoencoder", meanAuc: 0.617, color: "from-blue-500 to-cyan-500", pros: ["Simple architecture", "Stable training", "Best generalization"], cons: ["No probabilistic latent space"], bestOn: "Screw (0.98)" },
-            { name: "VAE", full: "Variational Autoencoder", meanAuc: 0.476, color: "from-purple-500 to-pink-500", pros: ["Probabilistic encoding", "Latent space sampling"], cons: ["KL divergence instability", "Lower AUC"], bestOn: "Screw (1.00)*" },
-            { name: "DAE", full: "Denoising Autoencoder", meanAuc: 0.621, color: "from-orange-500 to-red-500", pros: ["Robust to noise", "Good on textures", "Best mean AUC"], cons: ["Requires noise tuning"], bestOn: "Screw (0.99)" },
+            { name: "CAE", full: "Convolutional Autoencoder", meanAuc: 0.617, gradient: "from-blue-500 to-cyan-500", pros: ["Simple architecture", "Stable training", "Best generalization"], cons: ["No probabilistic latent space"], bestOn: "Screw (0.98)" },
+            { name: "VAE", full: "Variational Autoencoder", meanAuc: 0.476, gradient: "from-purple-500 to-pink-500", pros: ["Probabilistic encoding", "Latent space sampling"], cons: ["KL divergence instability", "Lower AUC"], bestOn: "Screw (1.00)*" },
+            { name: "DAE", full: "Denoising Autoencoder", meanAuc: 0.621, gradient: "from-orange-500 to-red-500", pros: ["Robust to noise", "Good on textures", "Best mean AUC"], cons: ["Requires noise tuning"], bestOn: "Screw (0.99)" },
           ].map((model, i) => (
-            <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 + i * 0.1 }} whileHover={{ scale: 1.02 }} className={`p-6 rounded-2xl border relative overflow-hidden group ${cardBg}`}>
-              <div className={`absolute inset-0 bg-gradient-to-br ${model.color} opacity-0 group-hover:opacity-10 transition-opacity`} />
+            <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 + i * 0.1 }} whileHover={{ y: -6 }} className={`p-6 rounded-2xl relative overflow-hidden group card-3d-subtle cursor-default ${cardClass}`}>
+              <div className={`absolute inset-0 bg-gradient-to-br ${model.gradient} opacity-0 group-hover:opacity-[0.06] transition-opacity duration-500`} />
               <div className="relative z-10">
-                <div className={`inline-block px-4 py-2 rounded-xl bg-gradient-to-r ${model.color} text-white font-black text-xl mb-3`}>{model.name}</div>
+                <div className={`inline-block px-4 py-2 rounded-xl bg-gradient-to-r ${model.gradient} text-white font-black text-xl mb-3 shadow-lg`}>{model.name}</div>
                 <h3 className={`font-semibold mb-1 ${textPrimary}`}>{model.full}</h3>
                 <div className={`text-3xl font-black mb-4 ${textPrimary}`}>{model.meanAuc.toFixed(3)}</div>
                 <div className="space-y-2 text-sm">

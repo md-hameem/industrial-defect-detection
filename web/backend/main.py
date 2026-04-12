@@ -292,15 +292,33 @@ async def predict_batch(
     types = [t.strip() for t in model_types.split(",")]
     
     # Run batch inference
-    results = inference.predict_batch(image, types, category)
+    raw_results = inference.predict_batch(image, types, category)
     
     processing_time = time.time() - start_time
+    avg_processing_time = processing_time / len(types) if types else 0
+    
+    formatted_results = []
+    for raw in raw_results:
+        if raw.get("success") is False:
+            formatted_results.append(raw)
+        else:
+            formatted_results.append({
+                "success": True,
+                "model": raw["model_type"],
+                "model_type": "anomaly_detector",
+                "category": category,
+                "anomaly_score": raw.get("anomaly_score", 0.0),
+                "original_image": raw.get("original_base64", ""),
+                "reconstruction": raw.get("reconstruction_base64", ""),
+                "heatmap": raw.get("heatmap_base64", ""),
+                "processing_time": avg_processing_time,
+            })
     
     return {
         "success": True,
         "total_models": len(types),
         "processing_time": processing_time,
-        "results": results,
+        "results": formatted_results,
     }
 
 
