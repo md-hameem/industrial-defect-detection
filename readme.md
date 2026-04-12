@@ -12,19 +12,31 @@
 
 ## 🌐 Web Application
 
-A full-stack web application for interactive defect detection:
+A stunning, 3D-inspired full-stack web application for interactive defect detection featuring glassmorphism UI, animated gradient effects, and deep OLED-dark aesthetics:
 
-| Homepage | Detection Page |
-|----------|----------------|
-| ![Homepage](web/frontend/public/homepage.png) | ![Detection](web/frontend/public/detectpage.png) |
+### Homepage
+![Homepage](web/frontend/public/homepage.png)
+
+### Homepage — Stats & Workflow
+![Homepage Scrolled](web/frontend/public/homepage_scrolled.png)
+
+### Detection Page — AI-Powered Analysis
+![Detection Page](web/frontend/public/detectpage.png)
+
+### Research Results — Data Visualization
+![Research Page](web/frontend/public/researchpage.png)
+
+### About — Project Overview
+![About Page](web/frontend/public/aboutpage.png)
 
 ### Features
 - 🔍 **Real-time Detection** - Upload images and get instant AI analysis
 - 🧠 **6 AI Models** - CAE, VAE, DAE, Skip-CAE, PatchCore (SOTA), CNN
 - 🌡️ **Visual Heatmaps** - Gaussian-smoothed anomaly maps + SSIM scoring
 - 📊 **Compare All Models** - Side-by-side 5-model comparison with batch API
-- 🌓 **Dark/Light Mode** - Full theme support
+- 🌓 **Dark/Light Mode** - Full theme support with glassmorphism
 - 📜 **History Tracking** - Keep track of all predictions
+- ✨ **3D Effects** - CSS perspective transforms, glow borders, animated gradients
 
 ### Quick Start
 ```bash
