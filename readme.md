@@ -5,7 +5,7 @@
 [![Next.js](https://img.shields.io/badge/Next.js-15-black.svg)](https://nextjs.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-teal.svg)](https://fastapi.tiangolo.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Changelog](https://img.shields.io/badge/Changelog-v4.0.0-green.svg)](CHANGELOG.md)
+[![Changelog](https://img.shields.io/badge/Changelog-v4.1.0-green.svg)](CHANGELOG.md)
 [![Thesis](https://img.shields.io/badge/Thesis-Read_Final_Draft-purple.svg)](docs/thesis_paper.md)
 
 **Bachelor's Graduation Thesis** - Research on Industrial Defect Detection Methods Based on Deep Learning

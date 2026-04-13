@@ -4,6 +4,37 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [4.1.0] - 2026-04-14
+
+### Added
+- **Comprehensive Project Overview** (`docs/overview.md`)
+  - 772-line technical reference verified against actual codebase, configs, and results
+  - Covers all 6 models, training pipelines, evaluation, web architecture, and deployment
+  - Includes verified-facts vs inferred-points transparency section
+- **New Project Screenshots** (`web/frontend/public/`)
+  - `aboutpage.png` — About page showcase
+  - `homepage_scrolled.png` — Stats & workflow section below the fold
+  - `researchpage.png` — Research dashboard with data visualizations
+  - Updated `homepage.png` and `detectpage.png` with new 3D design
+
+### Changed
+- **Frontend UI Redesign** — Complete visual overhaul across all pages
+  - Deep OLED-dark aesthetics with glassmorphism and glow borders
+  - CSS perspective transforms and 3D card effects
+  - Animated gradients and micro-hover animations
+  - Responsive layout improvements (mobile to desktop)
+- **Homepage** (`web/frontend/src/app/page.tsx`) — New hero section, interactive stats, workflow steps, feature cards, and model showcase with Framer Motion animations
+- **Detection Page** (`web/frontend/src/app/detect/page.tsx`) — Redesigned upload interface and results layout with 3D-inspired styling
+- **Research Page** (`web/frontend/src/app/research/page.tsx`) — Expanded dashboard with 5-model performance tables, per-category AUC data, and cross-dataset metrics
+- **About Page** (`web/frontend/src/app/about/page.tsx`) — Updated project info, methodology, and architecture details
+- **Navbar** (`web/frontend/src/components/Navbar.tsx`) — Refreshed navigation with theme toggle
+- **Footer** (`web/frontend/src/components/Footer.tsx`) — Updated site-wide footer
+- **ClientLayout** (`web/frontend/src/components/ClientLayout.tsx`) — Enhanced wrapper with improved theme support
+- **Global CSS** (`web/frontend/src/app/globals.css`) — 300+ lines of new design tokens, glassmorphism utilities, and animation keyframes
+- **Layout** (`web/frontend/src/app/layout.tsx`) — Updated metadata and font configuration
+- **Thesis Paper** (`docs/thesis_paper.md`) — Audited and corrected technical claims against actual code and results
+- **README** — Updated with new screenshots, 3D design descriptions, and feature highlights
+
 ## [4.0.0] - 2026-04-10
 
 ### Added
