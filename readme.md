@@ -83,7 +83,7 @@ Open http://localhost:3000
 ### CNN Classifier Performance (NEU Dataset)
 | Training Curves | Confusion Matrix |
 |-----------------|------------------|
-| ![Training](outputs/figures/cnn_training_curves.png) | ![Confusion](outputs/figures/cnn_confusion_matrix.png) |
+| ![Training](outputs/figures/CNN/cnn_training_curves.png) | ![Confusion](outputs/figures/CNN/cnn_confusion_matrix.png) |
 
 ## 🔍 Overview
 
@@ -95,22 +95,23 @@ This project implements **unsupervised anomaly detection** using autoencoder-bas
 - 🏭 **3 Industrial Datasets** - MVTec AD, KolektorSDD2, NEU Surface Defect
 - 🧠 **6 Models** - CAE, VAE, Denoising AE, Skip-CAE (U-Net), PatchCore (SOTA), CNN Classifier
 - 🌐 **Full-Stack Web App** - Next.js + FastAPI with batch inference API
-- 📊 **84 Visualizations** - Heatmaps, ROC curves, reconstructions
+- 📊 **151 Visualizations** - Heatmaps, ROC curves, reconstructions, collages
 - 💻 **CPU Optimized** - Designed for training without GPU (auto-detects CUDA)
 - 🔬 **Cross-Dataset Testing** - Generalization evaluation
-- 🧪 **44 Unit Tests** - Comprehensive model and metric test coverage
+- 🧪 **48 Unit Tests** - Comprehensive model and metric test coverage
 - 🔒 **Security** - Env-based secrets, input validation, secure model loading
 
 ## 📁 Project Structure
 
 ```
-├── docs/               # Thesis documentation and figures
+├── docs/               # Thesis documentation & figures
 ├── src/
 │   ├── config.py           # Configuration settings
 │   ├── data/               # Dataset loaders (MVTec, Kolektor, NEU)
-│   ├── models/             # CAE, VAE, Denoising AE, CNN
+│   ├── models/             # CAE, VAE, DAE, Skip-CAE, PatchCore, CNN
 │   ├── training/           # Training utilities, losses
-│   └── evaluation/         # Metrics & visualization
+│   ├── evaluation/         # Metrics & visualization
+│   └── utils/              # Shared utilities
 ├── web/
 │   ├── backend/            # FastAPI inference server
 │   │   ├── main.py         # API endpoints
@@ -126,13 +127,19 @@ This project implements **unsupervised anomaly detection** using autoencoder-bas
 │   ├── 04_train_cnn_classifier.ipynb
 │   ├── 05_analysis_visualization.ipynb
 │   ├── 06_cross_dataset_evaluation.ipynb
-│   └── 07_thesis_figures.ipynb
+│   ├── 07_thesis_figures.ipynb
+│   ├── 08_comprehensive_evaluation.ipynb
+│   ├── 09_train_skip_cae.ipynb
+│   ├── 10_train_patchcore.ipynb
+│   ├── 11_train_skip_cae_kaggle.ipynb
+│   └── 12_train_patchcore_kaggle.ipynb
+├── scripts/                # Evaluation & figure generation scripts
 ├── datasets/               # Dataset storage
 ├── outputs/
-│   ├── models/             # 45+ trained model checkpoints
+│   ├── models/             # 151 trained model checkpoints
 │   ├── logs/               # Training history
-│   └── figures/            # 84 visualizations
-└── tests/                  # Unit tests
+│   └── figures/            # 151 visualizations & collages
+└── tests/                  # 48 unit tests
 ```
 
 ## 🚀 Quick Start

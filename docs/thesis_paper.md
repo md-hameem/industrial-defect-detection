@@ -173,7 +173,7 @@ PatchCore (Roth et al., CVPR 2022) represents a fundamentally different approach
 - Crazing, Inclusion, Patches, Pitted, Rolled, Scratches
 - 300×300 grayscale images
 
-![NEU Surface Defect Categories](../outputs/figures/neu_categories.png)
+![NEU Surface Defect Categories](../outputs/figures/NEU/neu_categories.png)
 *Figure 2.3: Six defect categories of the NEU Surface Defect dataset.*
 
 ### 2.4 Evaluation Metrics
@@ -366,7 +366,7 @@ A lightweight CNN is implemented for supervised classification on the NEU datase
 | Device | CPU (auto-detects CUDA) |
 | Augmentation | Standard (flip, rotate) |
 
-![Training Convergence Example](../outputs/figures/cae_bottle_loss_curve.png)
+![Training Convergence Example](../outputs/figures/CAE/cae_bottle_loss_curve.png)
 *Figure 3.4: Example training loss curve (CAE on Bottle category) showing stable convergence.*
 
 ### 3.5 Anomaly Scoring
@@ -433,7 +433,7 @@ The demonstration system is a full-stack web application designed for real-time 
   - `GET /categories`: List categories with trained models
 
 **Testing:**
-- 47 unit tests covering all model architectures and evaluation metrics
+- 48 unit tests covering all model architectures and evaluation metrics
 - pytest-based test suite with forward pass, output shape, and scoring verification
 
 ---
@@ -530,7 +530,7 @@ The demonstration system is a full-stack web application designed for real-time 
 
 **Finding**: Models trained on structured patterns (grid, leather) generalize better to the Kolektor scratch detection task.
 
-![Cross-Dataset ROC Curves](../outputs/figures/cross_dataset_roc.png)
+![Cross-Dataset ROC Curves](../outputs/figures/CROSS DATASET/cross_dataset_roc.png)
 *Figure 4.4: ROC Curves for MVTec-trained models evaluated on KolektorSDD2.*
 
 ### 4.4 CNN Classifier Results (NEU Dataset)
@@ -541,10 +541,10 @@ The demonstration system is a full-stack web application designed for real-time 
 | Classes | 6 (Crazing, Inclusion, Patches, Pitted, Rolled, Scratches) |
 | Training Epochs | 50 |
 
-![Confusion Matrix](../outputs/figures/cnn_confusion_matrix.png)
+![Confusion Matrix](../outputs/figures/CNN/cnn_confusion_matrix.png)
 *Figure 4.5: Confusion matrix for CNN classifier on NEU test set.*
 
-![CNN Training Curves](../outputs/figures/cnn_training_curves.png)
+![CNN Training Curves](../outputs/figures/CNN/cnn_training_curves.png)
 *Figure 4.6: Accuracy and Loss curves during CNN training.*
 
 ### 4.5 Visualization Examples
@@ -670,7 +670,7 @@ This thesis implemented and evaluated five anomaly detection architectures and o
 - **Variational Autoencoder (VAE)** showed potential but requires careful tuning
 - **CNN Classifier** achieved 99% accuracy on supervised NEU classification
 
-A full-stack web application was developed with batch model comparison, Gaussian-smoothed heatmaps, and support for all 6 models. The system includes 47 unit tests ensuring reliability.
+A full-stack web application was developed with batch model comparison, Gaussian-smoothed heatmaps, and support for all 6 models. The system includes 48 unit tests ensuring reliability.
 
 ### 6.2 Contributions
 
@@ -681,7 +681,7 @@ A full-stack web application was developed with batch model comparison, Gaussian
 5. Cross-dataset generalization analysis (MVTec → Kolektor)
 6. Post-processing pipeline (Gaussian smoothing + normalization) for production-quality heatmaps
 7. Full-stack web application with batch inference API for real-time multi-model comparison
-8. Comprehensive test suite (47 tests) and evaluation metrics module
+8. Comprehensive test suite (48 tests) and evaluation metrics module
 
 ### 6.3 Answering the Research Questions
 
@@ -739,7 +739,7 @@ Thesis/
 │   ├── data/            # Dataset loaders + augmentation
 │   ├── training/        # Training utilities + losses
 │   └── evaluation/      # Metrics and visualization
-├── tests/               # 47 unit tests (pytest)
+├── tests/               # 48 unit tests (pytest)
 │   ├── test_models.py   # All 6 model architectures
 │   ├── test_metrics.py  # Evaluation metric correctness
 │   └── conftest.py      # Pytest configuration
@@ -783,63 +783,63 @@ Thesis/
 This appendix presents qualitative results for the Convolutional Autoencoder (CAE) across all 15 MVTec AD categories. Each figure shows the input image (original), the reconstructed image, the pixel-wise squared error, and the ground truth anomaly mask (if available).
 
 #### D.1 Bottle
-![Bottle Reconstructions](../outputs/figures/cae_bottle_reconstructions.png)
+![Bottle Reconstructions](../outputs/figures/CAE/cae_bottle_reconstructions.png)
 *Figure D.1: CAE reconstructions for Bottle category.*
 
 #### D.2 Cable
-![Cable Reconstructions](../outputs/figures/cae_cable_reconstruction.png)
+![Cable Reconstructions](../outputs/figures/CAE/cae_cable_reconstruction.png)
 *Figure D.2: CAE reconstructions for Cable category.*
 
 #### D.3 Capsule
-![Capsule Reconstructions](../outputs/figures/cae_capsule_reconstruction.png)
+![Capsule Reconstructions](../outputs/figures/CAE/cae_capsule_reconstruction.png)
 *Figure D.3: CAE reconstructions for Capsule category.*
 
 #### D.4 Carpet
-![Carpet Reconstructions](../outputs/figures/cae_carpet_reconstruction.png)
+![Carpet Reconstructions](../outputs/figures/CAE/cae_carpet_reconstruction.png)
 *Figure D.4: CAE reconstructions for Carpet category.*
 
 #### D.5 Grid
-![Grid Reconstructions](../outputs/figures/cae_grid_reconstruction.png)
+![Grid Reconstructions](../outputs/figures/CAE/cae_grid_reconstruction.png)
 *Figure D.5: CAE reconstructions for Grid category.*
 
 #### D.6 Hazelnut
-![Hazelnut Reconstructions](../outputs/figures/cae_hazelnut_reconstruction.png)
+![Hazelnut Reconstructions](../outputs/figures/CAE/cae_hazelnut_reconstruction.png)
 *Figure D.6: CAE reconstructions for Hazelnut category.*
 
 #### D.7 Leather
-![Leather Reconstructions](../outputs/figures/cae_leather_reconstruction.png)
+![Leather Reconstructions](../outputs/figures/CAE/cae_leather_reconstruction.png)
 *Figure D.7: CAE reconstructions for Leather category.*
 
 #### D.8 Metal Nut
-![Metal Nut Reconstructions](../outputs/figures/cae_metal_nut_reconstruction.png)
+![Metal Nut Reconstructions](../outputs/figures/CAE/cae_metal_nut_reconstruction.png)
 *Figure D.8: CAE reconstructions for Metal Nut category.*
 
 #### D.9 Pill
-![Pill Reconstructions](../outputs/figures/cae_pill_reconstruction.png)
+![Pill Reconstructions](../outputs/figures/CAE/cae_pill_reconstruction.png)
 *Figure D.9: CAE reconstructions for Pill category.*
 
 #### D.10 Screw
-![Screw Reconstructions](../outputs/figures/cae_screw_reconstruction.png)
+![Screw Reconstructions](../outputs/figures/CAE/cae_screw_reconstruction.png)
 *Figure D.10: CAE reconstructions for Screw category.*
 
 #### D.11 Tile
-![Tile Reconstructions](../outputs/figures/cae_tile_reconstruction.png)
+![Tile Reconstructions](../outputs/figures/CAE/cae_tile_reconstruction.png)
 *Figure D.11: CAE reconstructions for Tile category.*
 
 #### D.12 Toothbrush
-![Toothbrush Reconstructions](../outputs/figures/cae_toothbrush_reconstruction.png)
+![Toothbrush Reconstructions](../outputs/figures/CAE/cae_toothbrush_reconstruction.png)
 *Figure D.12: CAE reconstructions for Toothbrush category.*
 
 #### D.13 Transistor
-![Transistor Reconstructions](../outputs/figures/cae_transistor_reconstruction.png)
+![Transistor Reconstructions](../outputs/figures/CAE/cae_transistor_reconstruction.png)
 *Figure D.13: CAE reconstructions for Transistor category.*
 
 #### D.14 Wood
-![Wood Reconstructions](../outputs/figures/cae_wood_reconstruction.png)
+![Wood Reconstructions](../outputs/figures/CAE/cae_wood_reconstruction.png)
 *Figure D.14: CAE reconstructions for Wood category.*
 
 #### D.15 Zipper
-![Zipper Reconstructions](../outputs/figures/cae_zipper_reconstruction.png)
+![Zipper Reconstructions](../outputs/figures/CAE/cae_zipper_reconstruction.png)
 *Figure D.15: CAE reconstructions for Zipper category.*
 
 ---
@@ -851,77 +851,77 @@ This appendix displays the training and validation loss curves for both CAE and 
 #### E.1 Bottle
 | CAE Training | DAE Training |
 |--------------|--------------|
-| ![CAE Bottle](../outputs/figures/cae_bottle_training.png) | ![DAE Bottle](../outputs/figures/dae_bottle_training.png) |
+| ![CAE Bottle](../outputs/figures/CAE/cae_bottle_training.png) | ![DAE Bottle](../outputs/figures/DAE/dae_bottle_training.png) |
 
 #### E.2 Cable
 | CAE Training | DAE Training |
 |--------------|--------------|
-| ![CAE Cable](../outputs/figures/cae_cable_training.png) | ![DAE Cable](../outputs/figures/dae_cable_training.png) |
+| ![CAE Cable](../outputs/figures/CAE/cae_cable_training.png) | ![DAE Cable](../outputs/figures/DAE/dae_cable_training.png) |
 
 #### E.3 Capsule
 | CAE Training | DAE Training |
 |--------------|--------------|
-| ![CAE Capsule](../outputs/figures/cae_capsule_training.png) | ![DAE Capsule](../outputs/figures/dae_capsule_training.png) |
+| ![CAE Capsule](../outputs/figures/CAE/cae_capsule_training.png) | ![DAE Capsule](../outputs/figures/DAE/dae_capsule_training.png) |
 
 #### E.4 Carpet
 | CAE Training | DAE Training |
 |--------------|--------------|
-| ![CAE Carpet](../outputs/figures/cae_carpet_training.png) | ![DAE Carpet](../outputs/figures/dae_carpet_training.png) |
+| ![CAE Carpet](../outputs/figures/CAE/cae_carpet_training.png) | ![DAE Carpet](../outputs/figures/DAE/dae_carpet_training.png) |
 
 #### E.5 Grid
 | CAE Training | DAE Training |
 |--------------|--------------|
-| ![CAE Grid](../outputs/figures/cae_grid_training.png) | ![DAE Grid](../outputs/figures/dae_grid_training.png) |
+| ![CAE Grid](../outputs/figures/CAE/cae_grid_training.png) | ![DAE Grid](../outputs/figures/DAE/dae_grid_training.png) |
 
 #### E.6 Hazelnut
 | CAE Training | DAE Training |
 |--------------|--------------|
-| ![CAE Hazelnut](../outputs/figures/cae_hazelnut_training.png) | ![DAE Hazelnut](../outputs/figures/dae_hazelnut_training.png) |
+| ![CAE Hazelnut](../outputs/figures/CAE/cae_hazelnut_training.png) | ![DAE Hazelnut](../outputs/figures/DAE/dae_hazelnut_training.png) |
 
 #### E.7 Leather
 | CAE Training | DAE Training |
 |--------------|--------------|
-| ![CAE Leather](../outputs/figures/cae_leather_training.png) | ![DAE Leather](../outputs/figures/dae_leather_training.png) |
+| ![CAE Leather](../outputs/figures/CAE/cae_leather_training.png) | ![DAE Leather](../outputs/figures/DAE/dae_leather_training.png) |
 
 #### E.8 Metal Nut
 | CAE Training | DAE Training |
 |--------------|--------------|
-| ![CAE Metal Nut](../outputs/figures/cae_metal_nut_training.png) | ![DAE Metal Nut](../outputs/figures/dae_metal_nut_training.png) |
+| ![CAE Metal Nut](../outputs/figures/CAE/cae_metal_nut_training.png) | ![DAE Metal Nut](../outputs/figures/DAE/dae_metal_nut_training.png) |
 
 #### E.9 Pill
 | CAE Training | DAE Training |
 |--------------|--------------|
-| ![CAE Pill](../outputs/figures/cae_pill_training.png) | ![DAE Pill](../outputs/figures/dae_pill_training.png) |
+| ![CAE Pill](../outputs/figures/CAE/cae_pill_training.png) | ![DAE Pill](../outputs/figures/DAE/dae_pill_training.png) |
 
 #### E.10 Screw
 | CAE Training | DAE Training |
 |--------------|--------------|
-| ![CAE Screw](../outputs/figures/cae_screw_training.png) | ![DAE Screw](../outputs/figures/dae_screw_training.png) |
+| ![CAE Screw](../outputs/figures/CAE/cae_screw_training.png) | ![DAE Screw](../outputs/figures/DAE/dae_screw_training.png) |
 
 #### E.11 Tile
 | CAE Training | DAE Training |
 |--------------|--------------|
-| ![CAE Tile](../outputs/figures/cae_tile_training.png) | ![DAE Tile](../outputs/figures/dae_tile_training.png) |
+| ![CAE Tile](../outputs/figures/CAE/cae_tile_training.png) | ![DAE Tile](../outputs/figures/DAE/dae_tile_training.png) |
 
 #### E.12 Toothbrush
 | CAE Training | DAE Training |
 |--------------|--------------|
-| ![CAE Toothbrush](../outputs/figures/cae_toothbrush_training.png) | ![DAE Toothbrush](../outputs/figures/dae_toothbrush_training.png) |
+| ![CAE Toothbrush](../outputs/figures/CAE/cae_toothbrush_training.png) | ![DAE Toothbrush](../outputs/figures/DAE/dae_toothbrush_training.png) |
 
 #### E.13 Transistor
 | CAE Training | DAE Training |
 |--------------|--------------|
-| ![CAE Transistor](../outputs/figures/cae_transistor_training.png) | ![DAE Transistor](../outputs/figures/dae_transistor_training.png) |
+| ![CAE Transistor](../outputs/figures/CAE/cae_transistor_training.png) | ![DAE Transistor](../outputs/figures/DAE/dae_transistor_training.png) |
 
 #### E.14 Wood
 | CAE Training | DAE Training |
 |--------------|--------------|
-| ![CAE Wood](../outputs/figures/cae_wood_training.png) | ![DAE Wood](../outputs/figures/dae_wood_training.png) |
+| ![CAE Wood](../outputs/figures/CAE/cae_wood_training.png) | ![DAE Wood](../outputs/figures/DAE/dae_wood_training.png) |
 
 #### E.15 Zipper
 | CAE Training | DAE Training |
 |--------------|--------------|
-| ![CAE Zipper](../outputs/figures/cae_zipper_training.png) | ![DAE Zipper](../outputs/figures/dae_zipper_training.png) |
+| ![CAE Zipper](../outputs/figures/CAE/cae_zipper_training.png) | ![DAE Zipper](../outputs/figures/DAE/dae_zipper_training.png) |
 
 ---
 
