@@ -121,11 +121,13 @@ class ModelInference:
             raise ValueError(f"Unknown model type: {model_type}")
         
         # Load weights (weights_only=True for security on PyTorch 2.4+)
+        import pickle
         try:
             checkpoint = torch.load(model_path, map_location=self.device, weights_only=True)
-        except TypeError:
-            # Fallback for older PyTorch versions without weights_only param
-            checkpoint = torch.load(model_path, map_location=self.device)
+        except (TypeError, pickle.UnpicklingError):
+            # TypeError: older PyTorch without weights_only param
+            # UnpicklingError: checkpoint contains non-tensor objects (e.g. numpy scalars)
+            checkpoint = torch.load(model_path, map_location=self.device, weights_only=False)
         
         model.load_state_dict(checkpoint["model_state_dict"])
         model.eval()
