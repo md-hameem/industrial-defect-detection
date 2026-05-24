@@ -311,6 +311,26 @@ body {
   animation: ring-pulse 2s ease-in-out infinite;
 }
 
+/* ===== SELECT / DROPDOWN FIX ===== */
+/* Native <option> elements render with browser-default white bg on Windows,
+   causing invisible text when the <select> has light-colored text.
+   Force explicit colors so options are always readable. */
+select {
+  color-scheme: dark;
+}
+select option {
+  background-color: #0f172a;
+  color: #f8fafc;
+}
+/* Light mode override */
+[data-theme="light"] select {
+  color-scheme: light;
+}
+[data-theme="light"] select option {
+  background-color: #f1f5f9;
+  color: #0f172a;
+}
+
 /* ===== REDUCED MOTION ===== */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

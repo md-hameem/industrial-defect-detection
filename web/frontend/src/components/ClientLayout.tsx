@@ -9,6 +9,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
   return (
     <div
+      data-theme={darkMode ? "dark" : "light"}
       className={`min-h-screen flex flex-col transition-colors duration-500 relative ${
         darkMode
           ? "bg-[#020617] text-white"

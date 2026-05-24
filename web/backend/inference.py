@@ -164,10 +164,10 @@ class ModelInference:
         ax.axis('off')
         fig.subplots_adjust(left=0, right=1, top=1, bottom=0)
         
-        # Convert to image
+        # Convert to image (buffer_rgba replaces tostring_rgb in Matplotlib 3.8+)
         fig.canvas.draw()
-        data = np.frombuffer(fig.canvas.tostring_rgb(), dtype=np.uint8)
-        data = data.reshape(fig.canvas.get_width_height()[::-1] + (3,))
+        w, h = fig.canvas.get_width_height()
+        data = np.frombuffer(fig.canvas.buffer_rgba(), dtype=np.uint8).reshape(h, w, 4)[:, :, :3]
         plt.close(fig)
         
         return data
@@ -184,9 +184,10 @@ class ModelInference:
             ax.text(prob + 0.02, i, f'{prob:.1%}', va='center', fontsize=8)
         plt.tight_layout()
         
+        # Convert to image (buffer_rgba replaces tostring_rgb in Matplotlib 3.8+)
         fig.canvas.draw()
-        data = np.frombuffer(fig.canvas.tostring_rgb(), dtype=np.uint8)
-        data = data.reshape(fig.canvas.get_width_height()[::-1] + (3,))
+        w, h = fig.canvas.get_width_height()
+        data = np.frombuffer(fig.canvas.buffer_rgba(), dtype=np.uint8).reshape(h, w, 4)[:, :, :3]
         plt.close(fig)
         
         return data

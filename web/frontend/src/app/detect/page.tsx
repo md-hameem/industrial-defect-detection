@@ -255,7 +255,7 @@ export default function DetectPage() {
         <p className={textSecondary}>Upload industrial images for AI-powered anomaly analysis</p>
       </motion.div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-7 gap-6">
         {/* ===== LEFT PANEL ===== */}
         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="lg:col-span-2 space-y-5">
           
@@ -408,49 +408,7 @@ export default function DetectPage() {
             )}
           </div>
 
-          {/* Score Explanation */}
-          {!useCNN && (
-            <div className={`p-6 rounded-2xl ${cardClass}`}>
-              <h2 className={`text-lg font-bold mb-4 flex items-center gap-2 ${textPrimary}`}>
-                <Info className="w-5 h-5 text-blue-400" /> Understanding Scores
-              </h2>
-              
-              <div className="space-y-4 text-sm">
-                <div>
-                  <h3 className={`font-semibold mb-2 ${textSecondary}`}>How is the score calculated?</h3>
-                  <p className={textMuted}>
-                    The <strong className={textPrimary}>anomaly score</strong> is the <strong className="text-blue-400">mean reconstruction error</strong> — 
-                    how different the AI&apos;s reconstruction is from your original image.
-                  </p>
-                </div>
 
-                <div>
-                  <h3 className={`font-semibold mb-2 ${textSecondary}`}>Score Thresholds</h3>
-                  <div className="space-y-2">
-                    {[
-                      { range: "0.0 - 0.3", label: "Normal — No defect detected", color: "emerald", Icon: CheckCircle },
-                      { range: "0.3 - 0.6", label: "Suspicious — Possible anomaly", color: "amber", Icon: AlertTriangle },
-                      { range: "0.6+", label: "Anomaly — Likely defect", color: "rose", Icon: AlertCircle },
-                    ].map((t) => (
-                      <div key={t.range} className={`flex items-center gap-3 p-2.5 rounded-xl ${darkMode ? `bg-${t.color}-500/10` : `bg-${t.color}-50`}`}>
-                        <t.Icon className={`w-4 h-4 text-${t.color}-400`} />
-                        <div>
-                          <span className={`font-bold text-${t.color}-400`}>{t.range}</span>
-                          <span className={`ml-2 ${textMuted}`}>{t.label}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className={`p-3 rounded-xl ${darkMode ? "bg-blue-500/10 border border-blue-500/20" : "bg-blue-50 border border-blue-200"}`}>
-                  <p className={textMuted}>
-                    <strong className="text-blue-400">Heatmap Tip:</strong> Red/yellow areas show where the model detected differences from normal.
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* Upload Card */}
           <div className={`p-6 rounded-2xl ${cardClass}`}>
@@ -810,6 +768,73 @@ export default function DetectPage() {
                 </div>
               )}
             </AnimatePresence>
+          </div>
+        </motion.div>
+
+        {/* ===== 3RD COLUMN — UNDERSTANDING SCORES (always visible) ===== */}
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.1 }}
+          className="lg:col-span-2"
+        >
+          <div className={`p-5 rounded-2xl ${cardClass} sticky top-6`}>
+            <h2 className={`text-base font-bold mb-4 flex items-center gap-2 ${textPrimary}`}>
+              <Info className="w-4 h-4 text-blue-400" /> Understanding Scores
+            </h2>
+
+            <div className="space-y-4 text-sm">
+              {/* Score explanation */}
+              <div className={`p-3 rounded-xl ${darkMode ? "bg-white/[0.03]" : "bg-slate-50"}`}>
+                <p className={`font-semibold mb-1 ${textSecondary}`}>How is it calculated?</p>
+                <p className={`text-xs leading-relaxed ${textMuted}`}>
+                  The <strong className={textPrimary}>anomaly score</strong> is the{" "}
+                  <strong className="text-blue-400">mean reconstruction error</strong> — how different the AI&apos;s reconstruction is from your original image.
+                </p>
+              </div>
+
+              {/* Thresholds */}
+              <div>
+                <p className={`font-semibold mb-2 ${textSecondary}`}>Score Thresholds</p>
+                <div className="space-y-2">
+                  {[
+                    { range: "0.0 – 0.3", label: "Normal", sub: "No defect detected", color: "emerald", Icon: CheckCircle },
+                    { range: "0.3 – 0.6", label: "Suspicious", sub: "Possible anomaly", color: "amber", Icon: AlertTriangle },
+                    { range: "0.6+", label: "Anomaly", sub: "Likely defect", color: "rose", Icon: AlertCircle },
+                  ].map((t) => (
+                    <div
+                      key={t.range}
+                      className={`flex items-start gap-2.5 p-2.5 rounded-xl ${
+                        darkMode ? `bg-${t.color}-500/10 border border-${t.color}-500/20` : `bg-${t.color}-50 border border-${t.color}-100`
+                      }`}
+                    >
+                      <t.Icon className={`w-4 h-4 text-${t.color}-400 mt-0.5 shrink-0`} />
+                      <div>
+                        <span className={`font-bold text-${t.color}-400 text-xs`}>{t.range}</span>
+                        <p className={`font-semibold text-xs ${textSecondary}`}>{t.label}</p>
+                        <p className={`text-xs ${textMuted}`}>{t.sub}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Heatmap tip */}
+              <div className={`p-3 rounded-xl ${darkMode ? "bg-blue-500/10 border border-blue-500/20" : "bg-blue-50 border border-blue-200"}`}>
+                <p className={`text-xs leading-relaxed ${textMuted}`}>
+                  <strong className="text-blue-400">Heatmap Tip:</strong> Red/yellow areas show where the model detected differences from normal.
+                </p>
+              </div>
+
+              {/* CNN note — only when CNN mode active */}
+              {useCNN && (
+                <div className={`p-3 rounded-xl ${darkMode ? "bg-emerald-500/10 border border-emerald-500/20" : "bg-emerald-50 border border-emerald-200"}`}>
+                  <p className={`text-xs leading-relaxed ${textMuted}`}>
+                    <strong className="text-emerald-400">CNN Mode:</strong> Outputs a defect class + confidence score instead of a heatmap.
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         </motion.div>
       </div>
